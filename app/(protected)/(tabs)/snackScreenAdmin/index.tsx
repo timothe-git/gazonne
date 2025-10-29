@@ -1,7 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { addDoc, collection, getFirestore, onSnapshot, query, serverTimestamp } from '@react-native-firebase/firestore';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
@@ -36,9 +35,7 @@ export default function SnackScreenAdmin() {
     const [order, setOrder] = useState<{ [key: string]: number }>({});
 		const [chalet, setChalet] = useState("-1");
     const [menuData, setMenuData] = useState<MenuCategory[]>([]);
-    const [modalVisible, setModalVisible] = useState(false);
     const [waitingForConfirmation, setWaitingForConfirmation] = useState(false);
-    const tabBarHeight = useBottomTabBarHeight();
 
   
     const db = getFirestore();
@@ -106,14 +103,12 @@ export default function SnackScreenAdmin() {
     };
   
     const handleConfirmOrder = () => {
-      setModalVisible(true);
       setWaitingForConfirmation(true);
     };
 
     const finalizeOrder = () => {
       createOrder();
       setOrder({});
-      setModalVisible(false);
       setWaitingForConfirmation(false);
     };
   
@@ -169,7 +164,7 @@ export default function SnackScreenAdmin() {
 
 
     return (
-      <ThemedView style={[styles.container, { paddingBottom: tabBarHeight }]}>
+      <ThemedView style={styles.container}>
 				
         {waitingForConfirmation ? (
           <ThemedView style={styles.container}>
@@ -228,6 +223,9 @@ export default function SnackScreenAdmin() {
       flex: 1,
       backgroundColor: '#f8f8f8',
     },
+    flex: {
+      flex: 1,
+    },
     listContainer: {
       padding: 16,
     },
@@ -265,7 +263,8 @@ export default function SnackScreenAdmin() {
       borderRadius: 5,
       paddingVertical: 10,
       paddingHorizontal: 20,
-      margin: 16,
+      marginHorizontal: 16,
+      marginVertical: 4,
       alignItems: 'center',
     },
     buttonText: {
@@ -343,6 +342,7 @@ export default function SnackScreenAdmin() {
     fontWeight: 'bold',
   },
   confirmationContainer: {
+    flex: 1,
     padding: 16,
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -359,7 +359,8 @@ export default function SnackScreenAdmin() {
     borderRadius: 5,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    margin: 16,
+    marginHorizontal: 16,
+    marginVertical: 4,
     alignItems: 'center',
   },
   });

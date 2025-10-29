@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { FlatList, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 
 
@@ -76,12 +76,21 @@ export default function ActivitiesScreen() {
           data={item.activities}
           renderItem={renderActivity}
           keyExtractor={(activity) => activity.name}
+          ItemSeparatorComponent={hlineSeparator}
         />
       ) : (
-        <ThemedText style={styles.noActivities}>No activities scheduled</ThemedText>
+        <ThemedText style={styles.noActivities}>Pas d'activités prévues</ThemedText>
       )}
     </ThemedView>
   );
+
+  const spaceSeparator = () => {
+    return <View style={styles.sep}></View>;
+  };
+
+  const hlineSeparator = () => {
+    return <View style={styles.separator} />;
+  }
 
   return (
     <FlatList
@@ -89,6 +98,7 @@ export default function ActivitiesScreen() {
       renderItem={renderDayActivities}
       keyExtractor={(day) => day.day}
       contentContainerStyle={styles.container}
+      ItemSeparatorComponent={spaceSeparator}
     />
   );
 };
@@ -99,7 +109,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   dayContainer: {
-    marginBottom: 16,
     padding: 10,
     backgroundColor: '#ffffff',
     borderRadius: 8,
@@ -120,8 +129,6 @@ const styles = StyleSheet.create({
   },
   activityContainer: {
     paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   activityName: {
     fontSize: 16,
@@ -136,5 +143,13 @@ const styles = StyleSheet.create({
     color: '#999',
     fontStyle: 'italic',
   },
+  sep: {
+    height: 16,
+  },
+  separator: {
+    height: 1, // Height of the line
+    backgroundColor: '#e0e0e0', // Color of the line
+    width: '100%', // Make the line full width
+  }
 });
 

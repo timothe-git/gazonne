@@ -3,8 +3,6 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    paddingLeft: 16,
-    paddingRight: 16,
     backgroundColor: '#f5f5f5',
   },
   messageList: {
@@ -13,6 +11,7 @@ export default StyleSheet.create({
 
   messageContainer: {
     marginVertical: 8,
+    marginLeft: 16,
     alignItems: 'flex-start',
   },
   sender: {
@@ -36,14 +35,19 @@ export default StyleSheet.create({
     marginTop: 4,
   },
   input: {
+    marginHorizontal: 16,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
     padding: 10,
     backgroundColor: '#fff',
-    marginBottom: 70,
   },
-  owner: { textAlign: 'right', backgroundColor: '#dcf8c6', marginBottom: 4, padding: 8 },
+  owner: {
+    textAlign: 'right',
+    backgroundColor: '#dcf8c6',
+    marginBottom: 4,
+    padding: 8
+  },
   user: {
     textAlign: 'left',
     backgroundColor:
