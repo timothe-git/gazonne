@@ -1,0 +1,91 @@
+import React, { useContext, useState } from 'react';
+import { Button, Pressable, StyleSheet, TextInput } from 'react-native';
+
+
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { authContext } from '@/utils/AuthContext';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+
+
+const Login: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [showError, setShowError] = useState(false);
+
+  const authState = useContext(authContext);
+
+  //const [permission, requestPermission] = useCameraPermissions();
+  //const isPermissionGranted = Boolean(permission?.granted);
+
+  const router = useRouter();
+  const { chalet } = useLocalSearchParams();
+  console.log('chalet, ', chalet);
+
+
+  return (
+    <ThemedView style={styles.container}>
+      <Pressable onPress={
+        () => {
+          router.replace("./qrScan");
+        }
+      } style={[styles.mainBtn, styles.btnYellow,]}>
+        <ThemedText>Scan Code</ThemedText>
+      </Pressable>
+      {showError ? (
+        <ThemedText>{message}</ThemedText>
+      ) : (<ThemedText>no error</ThemedText>)}
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry={true}
+      />
+      <Button title="Login" onPress={() => authState.logIn(email, password)} />
+      <ThemedText>Need to register ? <Link replace href='/register'>Click here</Link></ThemedText>
+    </ThemedView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 16,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 8,
+  },
+  mainBtn: {
+    width: 200,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  btnGreen: {
+    backgroundColor: "#0BCD4C",
+  },
+  btnYellow: {
+    backgroundColor: "yellow",
+  },
+  mainText: {
+    fontSize: 20,
+    fontWeight: "bold"
+  }
+});
+
+export default Login;
