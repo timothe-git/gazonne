@@ -1,6 +1,6 @@
 import { authContext } from '@/utils/AuthContext';
 import { addDoc, collection, getFirestore, onSnapshot, orderBy, query, serverTimestamp } from '@react-native-firebase/firestore';
-import React, { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, Text, TextInput, View } from 'react-native';
 
 import styles from '@/styles/styles';

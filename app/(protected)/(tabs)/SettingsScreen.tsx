@@ -1,12 +1,11 @@
 import { Button, StyleSheet } from 'react-native';
 
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedView } from '@/components/ThemedView';
+import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { ThemedView } from '@/components/themed-view';
 import { authContext } from '@/utils/AuthContext';
 import { Image } from 'expo-image';
 import { useContext } from 'react';
 
-import QRCode from 'react-native-qrcode-svg';
 
 export default function HomeScreen() {
 
@@ -24,9 +23,6 @@ export default function HomeScreen() {
 			<ThemedView style={styles.titleContainer}>
 				<Button title="Logout" onPress={authState.logOut} />
 			</ThemedView>
-			<QRCode
-				value="user@hotmail.com,user01"
-			/>
 			
 		</ParallaxScrollView>
 	);

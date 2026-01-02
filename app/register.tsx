@@ -1,16 +1,14 @@
 import React, { useContext, useState } from 'react';
 import { Button, StyleSheet, TextInput } from 'react-native';
-//import { useDispatch } from 'react-redux';
 
-
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { authContext } from '@/utils/AuthContext';
 import { Link } from 'expo-router';
 
 
 const Register: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [showError, setShowError] = useState(false);
@@ -19,14 +17,14 @@ const Register: React.FC = () => {
 
   return (
     <ThemedView style={styles.container}>
-      {showError ? (
-              <ThemedText>{message}</ThemedText>
+      {authState.error ? (
+              <ThemedText>{authState.error}</ThemedText>
             ) : (<ThemedText>no error</ThemedText>)}
       <TextInput
         style={styles.input}
         placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
@@ -34,7 +32,7 @@ const Register: React.FC = () => {
         value={password}
         onChangeText={setPassword}
       />
-      <Button title="Register" />
+      <Button title="Register" onPress={() => authState.register(email, password)}/>
       <ThemedText>Already an account ? <Link replace href='/login'>Click here</Link></ThemedText>
     </ThemedView>
   );

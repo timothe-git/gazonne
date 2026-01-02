@@ -1,9 +1,9 @@
 import React, { useContext, useState } from 'react';
-import { Button, Pressable, StyleSheet, TextInput } from 'react-native';
+import { Button, StyleSheet, TextInput } from 'react-native';
 
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { authContext } from '@/utils/AuthContext';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -26,15 +26,8 @@ const Login: React.FC = () => {
 
   return (
     <ThemedView style={styles.container}>
-      <Pressable onPress={
-        () => {
-          router.replace("./qrScan");
-        }
-      } style={[styles.mainBtn, styles.btnYellow,]}>
-        <ThemedText>Scan Code</ThemedText>
-      </Pressable>
-      {showError ? (
-        <ThemedText>{message}</ThemedText>
+      {authState.error ? (
+        <ThemedText>{authState.error}</ThemedText>
       ) : (<ThemedText>no error</ThemedText>)}
       <TextInput
         style={styles.input}

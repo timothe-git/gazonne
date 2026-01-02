@@ -1,5 +1,5 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { breakfastOrderContext } from '@/utils/BreakfastOrderContext';
 import { addDoc, collection, deleteDoc, doc, getDoc, getFirestore, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
 import { useContext, useEffect, useState } from 'react';

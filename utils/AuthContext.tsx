@@ -13,7 +13,9 @@ type AuthState = {
 	isAdmin: boolean;
 	isReady: boolean;
 	logIn: (email: string, password: string) => void;
+	register: (email: string, password: string) => void;
 	logOut: () => void;
+	error: string;
 };
 
 
@@ -25,7 +27,9 @@ export const authContext = createContext<AuthState>({
 	isAdmin: false,
 	isReady: false,
 	logIn: (email: string, password: string) => {},
+	register: (email: string, password: string) => {},
 	logOut: () => {},
+	error: "",
 })
 
 
@@ -34,6 +38,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [isAdmin, setIsAdmin] = useState(false);
 	const [isReady, setIsReady] = useState(false);
+	const [error, setError] = useState("");
 
     const router = useRouter();
 
@@ -50,14 +55,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
 		const auth = getAuth();
 		createUserWithEmailAndPassword(auth, email, password)
 			.then((userCredential) => {
-				const user = userCredential.user;
 				setIsLoggedIn(true);
 				storeAuthState({ isLoggedIn: true, isAdmin: (email === "admin@hotmail.be") ? true : false });
 				router.replace('/');
 			})
 			.catch((error) => {
-				const errorCode = error.code;
-				const errorMessage = error.message;
+				setError("Login error");
+				console.log(error);
 			});
 		}
 
@@ -65,14 +69,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
 		const auth = getAuth();
 		signInWithEmailAndPassword(auth, email, password)
 			.then((userCredential) => {
-				const user = userCredential.user;
 				setIsLoggedIn(true);
 				storeAuthState({ isLoggedIn: true, isAdmin: (email === "admin@hotmail.be") ? true : false });
 				router.replace('/');
 			})
 			.catch((error) => {
-				const errorCode = error.code;
-				const errorMessage = error.message;
+				setError("Register error");
+				console.log(error);
 			});
 	};
 
@@ -103,7 +106,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 	}, []);
 
 	return (
-		<authContext.Provider value={{ isLoggedIn, isAdmin, isReady, logIn, logOut }}>
+		<authContext.Provider value={{ isLoggedIn, isAdmin, isReady, logIn, register, logOut, error }}>
 			{children}
 		</authContext.Provider>
 	);

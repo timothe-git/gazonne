@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "La Gazonne",
+    "name": "gazonne",
     "slug": "gazonne",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,22 +16,56 @@
     "android": {
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "package": "fr.leschaletsdelagazonne.lagazonne",
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ]
+      "predictiveBackGestureEnabled": false,
+      "package": "fr.leschaletsdelagazonne.lagazonne"
     },
     "web": {
-      "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            // Comment from a stackoverflow below
+            /**
+						 * RNFirebase iOS build fix using static linking (maintainer-recommended).
+						 *
+						 * We previously used `buildReactNativeFromSource: true` as a workaround to fix
+						 * RNFirebase + Firebase iOS SDK build issues, but it disabled Expo’s precompiled RN for
+						 * iOS builds and significantly increased build times.
+						 * - N.B. For links & context on why `buildReactNativeFromSource: true` was added,
+						 * refer to comments in the "previous commit".
+						 *
+						 * This `forceStaticLinking` configuration follows the Expo maintainer’s suggested solution:
+						 * https://github.com/expo/expo/issues/39607#issuecomment-3337284928
+						 * - Now precompiled builds are enabled and build times are reduced and RNFB builds work on iOS.
+						 *
+						 * ⚠️ IMPORTANT: If installing/removing react-native-firebase npm packages, ensure you also update this list.
+						 * - Look for `s.name` property in node_modules/@react-native-firebase/<module>/<module>.podspec to get the Pod name.
+						 */
+            "forceStaticLinking": [
+              "RNFBApp",
+              "RNFBAuth",
+              "RNFBCrashlytics",
+              "RNFBFirestore"
+            ],
+            /**
+						 * Helps RNFB to compile correctly on iOS, since firebase-ios-sdk requires use_frameworks
+						 * @see https://rnfirebase.io/#configure-react-native-firebase-modules
+						 */
+            "useFrameworks": "static"
+            }
+        }
+      ],
+      "@react-native-firebase/app",
       "expo-router",
       [
         "expo-splash-screen",
@@ -39,35 +73,16 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      "@react-native-firebase/app",
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
           }
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
-          "recordAudioAndroid": true
         }
       ]
     ],
     "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "2eab1479-65f9-4766-b717-0f6d2208d2d1"
-      }
+      "typedRoutes": true,
+      "reactCompiler": true
     }
   }
 }

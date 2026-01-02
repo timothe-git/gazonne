@@ -2,8 +2,8 @@ import { authContext } from '@/utils/AuthContext';
 import { Link, Stack } from 'expo-router';
 import 'react-native-reanimated';
 
-import { ThemedText } from '@/components/ThemedText';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { ThemedText } from '@/components/themed-text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useContext } from 'react';
 import { TouchableOpacity } from 'react-native';
 

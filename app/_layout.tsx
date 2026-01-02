@@ -7,7 +7,7 @@ import 'react-native-reanimated';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 
 export default function RootLayout() {
@@ -43,13 +43,6 @@ export default function RootLayout() {
               />
               <Stack.Screen
                 name="register"
-                options={{
-                  headerShown: false,
-                  animation: "none",
-                }}
-              />
-              <Stack.Screen
-                name="qrScan"
                 options={{
                   headerShown: false,
                   animation: "none",
