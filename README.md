@@ -2,7 +2,7 @@
 
 ## Run the app
 
-* Install dependencies
+* Install dependencies (Requires a LTS version of Node.js)
 
    ```bash
    npm install
@@ -20,7 +20,7 @@
    npx expo run:ios
    ```
 
-* Start the app on Android
+* Start the app on Android (Requires Java 17)
 
    ```bash
    npx expo run:android

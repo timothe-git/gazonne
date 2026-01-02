@@ -1,5 +1,5 @@
 {
-  "name": "test",
+  "name": "gazonne",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -15,13 +15,12 @@
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-firebase/app": "^23.7.0",
     "@react-native-firebase/auth": "^23.7.0",
-    "@react-native-firebase/crashlytics": "^23.7.0",
     "@react-native-firebase/firestore": "^23.7.0",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "expo": "~54.0.30",
-    "expo-build-properties": "~1.0.10",
+    "expo-build-properties": "^1.0.10",
     "expo-constants": "~18.0.12",
     "expo-font": "~14.0.10",
     "expo-haptics": "~15.0.8",
