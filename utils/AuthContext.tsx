@@ -73,7 +73,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
 				storeAuthState({ email, isLoggedIn, isAdmin });
 				
-				router.replace('/');
+				if (isAdmin) {
+					router.replace('/AdminSnack');
+				} else {
+					router.replace('/');
+				}
 			})
 			.catch((error) => {
 				setError("Login error");
@@ -92,7 +96,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
 				storeAuthState({ email, isLoggedIn, isAdmin });
 
-				router.replace('/');
+				if (isAdmin) {
+					router.replace('/AdminSnack');
+				} else {
+					router.replace('/');
+				}
 			})
 			.catch((error) => {
 				setError("Register error");
