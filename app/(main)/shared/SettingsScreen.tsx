@@ -1,15 +1,22 @@
 import { Button, StyleSheet } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { authContext } from '@/utils/AuthContext';
 import { Image } from 'expo-image';
 import { useContext } from 'react';
 
 
-export default function HomeScreen() {
+export default function SettingsScreen() {
 
 	const authState = useContext(authContext);
+	//console.log(authState.email);
+	//console.log(authState.isLoggedIn);
+
+	function logout() {
+		authState.logOut();
+	}
 
 	return (
 		<ParallaxScrollView
@@ -20,6 +27,7 @@ export default function HomeScreen() {
 					style={styles.reactLogo}
 				/>
 			}>
+			<ThemedText>{authState.email}</ThemedText>
 			<ThemedView style={styles.titleContainer}>
 				<Button title="Logout" onPress={authState.logOut} />
 			</ThemedView>

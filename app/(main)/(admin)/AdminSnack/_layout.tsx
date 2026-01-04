@@ -21,14 +21,14 @@ export default function RootLayout() {
                 title: 'Snack',
                 animation: "none",
                 headerLeft: () => (
-                <Link href='/snackScreenAdmin/ProductForm' dismissTo asChild>
+                <Link href='/AdminSnack/productForm' dismissTo asChild>
                   <TouchableOpacity>
                     <ThemedText style={{ color: 'black' }}>Nouveau</ThemedText>
                   </TouchableOpacity>
                 </Link>
               ),
                 headerRight: () => (
-                <Link href='/snackScreenAdmin/SnackHistory' asChild>
+                <Link href='/AdminSnack/snackHistory' asChild>
                   <TouchableOpacity>
                     <ThemedText style={{ color: 'black' }}>Historique</ThemedText>
                   </TouchableOpacity>
@@ -37,12 +37,12 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
-              name="SnackHistory"
+              name="snackHistory"
               options={{
                 title: 'Historique',
                 animation: "none",
                 headerLeft: () => (
-                <Link href='/snackScreenAdmin' dismissTo asChild>
+                <Link href='/AdminSnack' dismissTo asChild>
                   <TouchableOpacity>
                     <ThemedText style={{ color: 'black' }}>← Retour</ThemedText>
                   </TouchableOpacity>
@@ -51,12 +51,12 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
-              name="ProductForm"
+              name="productForm"
               options={{
                 title: 'Ajouter produit',
                 animation: "none",
                 headerLeft: () => (
-                <Link href='/snackScreenAdmin' dismissTo asChild>
+                <Link href='/AdminSnack' dismissTo asChild>
                   <TouchableOpacity>
                     <ThemedText style={{ color: 'black' }}>← Retour</ThemedText>
                   </TouchableOpacity>

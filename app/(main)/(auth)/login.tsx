@@ -16,9 +16,6 @@ const Login: React.FC = () => {
 
   const authState = useContext(authContext);
 
-  //const [permission, requestPermission] = useCameraPermissions();
-  //const isPermissionGranted = Boolean(permission?.granted);
-
   const router = useRouter();
   const { chalet } = useLocalSearchParams();
   console.log('chalet, ', chalet);
@@ -26,6 +23,7 @@ const Login: React.FC = () => {
 
   return (
     <ThemedView style={styles.container}>
+      <Link replace href='/'>Retour à l'accueil</Link>
       {authState.error ? (
         <ThemedText>{authState.error}</ThemedText>
       ) : (<ThemedText>no error</ThemedText>)}
@@ -45,7 +43,7 @@ const Login: React.FC = () => {
         secureTextEntry={true}
       />
       <Button title="Login" onPress={() => authState.logIn(email, password)} />
-      <ThemedText>Need to register ? <Link replace href='/register'>Click here</Link></ThemedText>
+      <ThemedText>Besoin de créer un compte ? <Link replace href='/register'>cliquez ici</Link></ThemedText>
     </ThemedView>
   );
 };

@@ -30,7 +30,7 @@ interface MenuProduct {
 }
 
 
-export default function SnackScreen() {
+export default function UserSnack() {
 
   const [menuData, setMenuData] = useState<MenuCategory[]>([]);
 

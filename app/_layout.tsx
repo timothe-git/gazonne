@@ -1,13 +1,14 @@
 import { AuthProvider } from '@/utils/AuthContext';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { BreakfastOrderProvider } from '@/utils/BreakfastOrderContext';
 
 
 export default function RootLayout() {
@@ -16,40 +17,24 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+  
   if (!loaded) {
     // Async font loading only occurs in development.
     return null;
   }
+
 
   
   return (
     <SafeAreaProvider>
       <AuthProvider>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <Stack>
-              <Stack.Screen
-                name="(protected)"
-                options={{
-                  headerShown: false,
-                  animation: "none",
-                }}
-              />
-              <Stack.Screen
-                name="login"
-                options={{
-                  headerShown: false,
-                  animation: "none",
-                }}
-              />
-              <Stack.Screen
-                name="register"
-                options={{
-                  headerShown: false,
-                  animation: "none",
-                }}
-              />
-            </Stack>
-            <StatusBar style="auto" />
+            <BreakfastOrderProvider>
+            
+              <Slot></Slot>
+            
+              <StatusBar style="auto" />
+            </BreakfastOrderProvider>
           </ThemeProvider>
       </AuthProvider>
     </SafeAreaProvider>

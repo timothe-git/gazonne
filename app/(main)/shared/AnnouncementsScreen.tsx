@@ -6,8 +6,11 @@ import { Alert, FlatList, Pressable, Text, TextInput, View } from 'react-native'
 import styles from '@/styles/styles';
 import { Message } from '@/types/types';
 
+type Props = {
+  isAdmin?: boolean;
+};
 
-const AnnouncementsScreen = ({ userId, isOwner }: { userId: string; isOwner: boolean }) => {
+const AnnouncementsScreen = ({ isAdmin = false }: Props) => {
   const [messages, setMessages] = useState<Message []>([]);
   const [newMessage, setNewMessage] = useState('');
 	const db = getFirestore();
@@ -31,14 +34,14 @@ const AnnouncementsScreen = ({ userId, isOwner }: { userId: string; isOwner: boo
 		});
 
     return () => unsubscribe();
-  }, [userId]);
+  }, []); // userId
 
   const handleSend = async () => {
     if (!newMessage.trim()) return;
 
     const messageData = {
       content: newMessage,
-      sender: isOwner ? 'owner' : 'user',
+      sender: isAdmin ? 'owner' : 'user',
       createdAt: serverTimestamp(),
     };
 
@@ -90,13 +93,15 @@ const AnnouncementsScreen = ({ userId, isOwner }: { userId: string; isOwner: boo
         data={messages}
         renderItem={renderMessage}
         inverted />
-      <TextInput
-        style={styles.input}
-        value={newMessage}
-        onChangeText={setNewMessage}
-        onSubmitEditing={handleSend}
-        returnKeyType="send"
-        placeholder="Aa"></TextInput>
+      {isAdmin && (
+        <TextInput
+          style={styles.input}
+          value={newMessage}
+          onChangeText={setNewMessage}
+          onSubmitEditing={handleSend}
+          returnKeyType="send"
+          placeholder="Aa"></TextInput>
+      )}
     </View>
   );
 };

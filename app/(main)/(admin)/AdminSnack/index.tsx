@@ -30,7 +30,7 @@ interface MenuProduct {
 }
 
 
-export default function SnackScreenAdmin() {
+export default function AdminSnack() {
 
     const [order, setOrder] = useState<{ [key: string]: number }>({});
 		const [chalet, setChalet] = useState("-1");

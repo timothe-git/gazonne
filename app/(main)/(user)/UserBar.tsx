@@ -64,7 +64,7 @@ const menuData: MenuCategory[] = [
 ]
 
 
-export default function BarScreen() {
+export default function UserBar() {
 
   const renderItem = ({ item }: { item: MenuItem }) => (
     <ThemedView style={styles.menuItem}>

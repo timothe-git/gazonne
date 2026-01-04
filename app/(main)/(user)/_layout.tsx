@@ -29,65 +29,45 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="ActivitiesScreen"
+        name="UserActivities"
         options={{
           title: 'Activités',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="SnackScreen"
+        name="UserSnack"
         options={{
           title: 'Le snack',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-          href: authState.isAdmin ? null : '/SnackScreen',
         }}
       />
       <Tabs.Screen
-        name="snackScreenAdmin"
-        options={{
-          title: 'Le snack',
-          header: () => null,
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-          href: authState.isAdmin ? '/snackScreenAdmin' : null,
-        }}
-      />
-      <Tabs.Screen
-        name="BarScreen"
+        name="UserBar"
         options={{
           title: 'Le bar',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-          href: null,
         }}
       />
       <Tabs.Screen
-        name="AnnouncementsScreen"
+        name="UserAnnouncements"
         options={{
           title: 'Annonces',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
+        <Tabs.Screen
+        name="UserBreakfastOrder"
+        options={{
+          title: 'petit-déj',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+        }}
+      />
       <Tabs.Screen
-        name="SettingsScreen"
+        name="UserSettings"
         options={{
           title: 'Réglages',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-        <Tabs.Screen
-        name="BreakfastOrderScreen"
-        options={{
-          title: 'petit-déj',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-          href: authState.isAdmin ? null : '/BreakfastOrderScreen',
-        }}
-      />
-        <Tabs.Screen
-        name="BreakfastOrderAdmin"
-        options={{
-          title: 'petit-déj',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-          href: authState.isAdmin ? '/BreakfastOrderAdmin' : null,
         }}
       />
     </Tabs>

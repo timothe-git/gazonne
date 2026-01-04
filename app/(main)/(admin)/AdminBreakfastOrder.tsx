@@ -28,7 +28,7 @@ interface Order {
 
 
 
-export default function BreakfastOrderAdmin() {
+export default function AdminBreakfastOrder() {
 
 	const [allOrders, setAllOrders] = useState<Order[]>([]);
 	const [totalOrder, setTotalOrder] = useState<Order>({

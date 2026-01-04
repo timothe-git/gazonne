@@ -60,7 +60,7 @@ const weeklyActivities: DayActivities[] = [
 ];
 
 
-export default function ActivitiesScreen() {
+export default function UserActivities() {
   const renderActivity = ({ item }: { item: Activity }) => (
     <ThemedView style={styles.activityContainer}>
       <ThemedText style={styles.activityName}>{item.name}</ThemedText>

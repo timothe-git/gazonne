@@ -6,7 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Image } from 'expo-image';
 
-export default function HomeScreen() {
+export default function UserHome() {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: 'white', dark: 'black' }}
