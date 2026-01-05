@@ -1,6 +1,6 @@
 import { authContext } from '@/utils/AuthContext';
 import { breakfastOrderContext, BreakfastOrderProvider } from '@/utils/BreakfastOrderContext';
-import { Redirect, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useContext } from 'react';
 import 'react-native-reanimated';
 
@@ -12,11 +12,6 @@ export default function ProtectedLayout() {
   
   if (!authState.isReady && !breakfastOrderState.isReady) {
     return null;
-  }
-
-
-  if (!authState.isLoggedIn) {
-    return <Redirect href="/login" />;
   }
 
   return (

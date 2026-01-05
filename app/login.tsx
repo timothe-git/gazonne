@@ -5,24 +5,14 @@ import { Button, StyleSheet, TextInput } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { authContext } from '@/utils/AuthContext';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [showError, setShowError] = useState(false);
 
   const authState = useContext(authContext);
-
-  //const [permission, requestPermission] = useCameraPermissions();
-  //const isPermissionGranted = Boolean(permission?.granted);
-
-  const router = useRouter();
-  const { chalet } = useLocalSearchParams();
-  console.log('chalet, ', chalet);
-
 
   return (
     <ThemedView style={styles.container}>
@@ -45,7 +35,7 @@ const Login: React.FC = () => {
         secureTextEntry={true}
       />
       <Button title="Login" onPress={() => authState.logIn(email, password)} />
-      <ThemedText>Need to register ? <Link replace href='/register'>Click here</Link></ThemedText>
+      <ThemedText>Besoin de créer un compte ? <Link replace href='/register'>cliquez ici</Link></ThemedText>
     </ThemedView>
   );
 };

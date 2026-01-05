@@ -53,14 +53,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="BarScreen"
-        options={{
-          title: 'Le bar',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="AnnouncementsScreen"
         options={{
           title: 'Annonces',
@@ -68,13 +60,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="SettingsScreen"
-        options={{
-          title: 'Réglages',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-        <Tabs.Screen
         name="BreakfastOrderScreen"
         options={{
           title: 'petit-déj',
@@ -82,13 +67,21 @@ export default function TabLayout() {
           href: authState.isAdmin ? null : '/BreakfastOrderScreen',
         }}
       />
-        <Tabs.Screen
+      <Tabs.Screen
         name="BreakfastOrderAdmin"
         options={{
           title: 'petit-déj',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
           href: authState.isAdmin ? '/BreakfastOrderAdmin' : null,
         }}
+      />
+      <Tabs.Screen
+      name="SettingsScreen"
+      options={{
+        title: 'Réglages',
+        tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+        href: authState.isLoggedIn ? '/SettingsScreen' : null,
+      }}
       />
     </Tabs>
   );

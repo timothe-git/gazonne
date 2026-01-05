@@ -67,17 +67,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
 		createUserWithEmailAndPassword(auth, emailInput, passwordInput)
 			.then((userCredential) => {
 
+				const adminStatus = emailInput === "admin@hotmail.be";
+				
 				setEmail(emailInput);
 				setIsLoggedIn(true);
-				setIsAdmin(emailInput === "admin@hotmail.be");
+				setIsAdmin(adminStatus);
 
-				storeAuthState({ email, isLoggedIn, isAdmin });
+				storeAuthState({ email: emailInput, isLoggedIn: true, isAdmin: adminStatus });
 				
-				if (isAdmin) {
-					router.replace('/AdminSnack');
-				} else {
-					router.replace('/');
-				}
+				router.replace('/');
 			})
 			.catch((error) => {
 				setError("Login error");
@@ -90,17 +88,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
 		signInWithEmailAndPassword(auth, emailInput, passwordInput)
 			.then((userCredential) => {
 
+				const adminStatus = emailInput === "admin@hotmail.be";
+				
 				setEmail(emailInput);
 				setIsLoggedIn(true);
-				setIsAdmin(emailInput === "admin@hotmail.be");
+				setIsAdmin(adminStatus);
 
-				storeAuthState({ email, isLoggedIn, isAdmin });
+				storeAuthState({ email: emailInput, isLoggedIn: true, isAdmin: adminStatus });
 
-				if (isAdmin) {
-					router.replace('/AdminSnack');
-				} else {
-					router.replace('/');
-				}
+				router.replace('/');
 			})
 			.catch((error) => {
 				setError("Register error");

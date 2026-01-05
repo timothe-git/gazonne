@@ -75,8 +75,8 @@ export default function SnackScreen() {
             });
   
             // Convert the map to an array of MenuCategory
-            console.log(categoriesMap);
-            console.log(Object.values(categoriesMap));
+            //console.log(categoriesMap);
+            //console.log(Object.values(categoriesMap));
             setMenuData(Object.values(categoriesMap));
           });
       

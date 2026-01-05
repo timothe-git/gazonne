@@ -10,8 +10,6 @@ import { Link } from 'expo-router';
 const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [showError, setShowError] = useState(false);
   
   const authState = useContext(authContext);
 
@@ -33,7 +31,7 @@ const Register: React.FC = () => {
         onChangeText={setPassword}
       />
       <Button title="Register" onPress={() => authState.register(email, password)}/>
-      <ThemedText>Already an account ? <Link replace href='/login'>Click here</Link></ThemedText>
+      <ThemedText>Vous avez déjà un compte ? <Link replace href='/login'>Cliquez ici</Link></ThemedText>
     </ThemedView>
   );
 };

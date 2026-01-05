@@ -7,7 +7,7 @@ import styles from '@/styles/styles';
 import { Message } from '@/types/types';
 
 
-const AnnouncementsScreen = ({ userId, isOwner }: { userId: string; isOwner: boolean }) => {
+const AnnouncementsScreen = () => {
   const [messages, setMessages] = useState<Message []>([]);
   const [newMessage, setNewMessage] = useState('');
 	const db = getFirestore();
@@ -31,14 +31,14 @@ const AnnouncementsScreen = ({ userId, isOwner }: { userId: string; isOwner: boo
 		});
 
     return () => unsubscribe();
-  }, [userId]);
+  }, []); // userId
 
   const handleSend = async () => {
     if (!newMessage.trim()) return;
 
     const messageData = {
       content: newMessage,
-      sender: isOwner ? 'owner' : 'user',
+      sender: isAdmin ? 'owner' : 'user',
       createdAt: serverTimestamp(),
     };
 
@@ -90,13 +90,15 @@ const AnnouncementsScreen = ({ userId, isOwner }: { userId: string; isOwner: boo
         data={messages}
         renderItem={renderMessage}
         inverted />
-      <TextInput
-        style={styles.input}
-        value={newMessage}
-        onChangeText={setNewMessage}
-        onSubmitEditing={handleSend}
-        returnKeyType="send"
-        placeholder="Aa"></TextInput>
+      {authState.isAdmin && (
+        <TextInput
+          style={styles.input}
+          value={newMessage}
+          onChangeText={setNewMessage}
+          onSubmitEditing={handleSend}
+          returnKeyType="send"
+          placeholder="Aa"></TextInput>
+      )}
     </View>
   );
 };

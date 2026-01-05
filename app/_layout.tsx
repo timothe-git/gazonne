@@ -1,13 +1,15 @@
 import { AuthProvider } from '@/utils/AuthContext';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ThemedText } from '@/components/themed-text';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { TouchableOpacity } from 'react-native';
 
 
 export default function RootLayout() {
@@ -37,15 +39,27 @@ export default function RootLayout() {
               <Stack.Screen
                 name="login"
                 options={{
-                  headerShown: false,
                   animation: "none",
+                  headerLeft: () => (
+                    <Link href='/' dismissTo asChild>
+                      <TouchableOpacity>
+                        <ThemedText style={{ color: 'black' }}>← Retour</ThemedText>
+                      </TouchableOpacity>
+                    </Link>
+                  ),
                 }}
               />
               <Stack.Screen
                 name="register"
                 options={{
-                  headerShown: false,
                   animation: "none",
+                  headerLeft: () => (
+                    <Link href='/' dismissTo asChild>
+                      <TouchableOpacity>
+                        <ThemedText style={{ color: 'black' }}>← Retour</ThemedText>
+                      </TouchableOpacity>
+                    </Link>
+                  ),
                 }}
               />
             </Stack>

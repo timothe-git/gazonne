@@ -1,9 +1,11 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { authContext } from '@/utils/AuthContext';
 import { breakfastOrderContext } from '@/utils/BreakfastOrderContext';
 import { addDoc, collection, deleteDoc, doc, getDoc, getFirestore, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
+import { Link, useRouter } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';
-import { Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface FoodItem {
   name: string;
@@ -24,11 +26,14 @@ export default function BreakfastOrderScreen() {
   const [orderId, setOrderId] = useState("");
   const [isBeingModified, setIsBeingModified] = useState(false);
 
+  const authState = useContext(authContext);
+  const router = useRouter();
+
   const db = getFirestore();
 
 
   const breakfastOrderState = useContext(breakfastOrderContext);
-  console.log(breakfastOrderState);
+  //console.log(breakfastOrderState);
 
   useEffect(() => {
     if (breakfastOrderState.orderId) {
@@ -137,9 +142,9 @@ export default function BreakfastOrderScreen() {
       if (docSnap.exists()) {
           setOrder(docSnap.data()?.order);
           setIsOrderConfirmed(true);
-      } else {
+      } /*else {
           console.log("No such document!");
-      }
+      }*/
   } catch (e) {
       console.error("Error retrieving document: ", e);
   }
@@ -195,6 +200,29 @@ export default function BreakfastOrderScreen() {
     const item = foodData.find((food) => food.name === name);
     return total + (item ? item.price * order[name] : 0);
   }, 0);
+
+  if (!authState.isLoggedIn) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <Text style={styles.title}>
+            Un compte est nécessaire
+          </Text>
+
+          <Text style={styles.message}>
+            Un compte est nécessaire pour passer une commande de petit-déjeuner.
+          </Text>
+
+          <Link href="/login" replace asChild>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Se connecter</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+      </View>
+    );
+  }
+
 
   return (
     <ThemedView style={styles.container}>
@@ -324,5 +352,34 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 12,
+    color: "#1F2937",
+  },
+  message: {
+    fontSize: 15,
+    textAlign: "center",
+    color: "#4B5563",
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  button: {
+    backgroundColor: "#2563EB",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
   },
 });
