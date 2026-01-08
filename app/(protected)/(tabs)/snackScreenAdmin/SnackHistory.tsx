@@ -1,17 +1,9 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { OrderFromDB } from '@/types/types';
 import { collection, deleteDoc, doc, getFirestore, onSnapshot, query, Timestamp, where } from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-
-
-interface OrderFromDB {
-	chalet: string,
-	id: string,
-  order: {[key: string]: number};
-  service: string;
-	createdAt: Timestamp,
-}
 
 
 export default function SnackHistory() {

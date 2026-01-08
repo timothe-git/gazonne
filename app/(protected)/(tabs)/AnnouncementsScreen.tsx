@@ -38,7 +38,7 @@ const AnnouncementsScreen = () => {
 
     const messageData = {
       content: newMessage,
-      sender: isAdmin ? 'owner' : 'user',
+      sender: authState.email,
       createdAt: serverTimestamp(),
     };
 

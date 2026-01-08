@@ -1,19 +1,8 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Activity, DayActivities } from '@/types/types';
 import { FlatList, StyleSheet, View } from 'react-native';
 
-
-
-interface Activity {
-  name: string;
-  startTime: string;
-  location: string;
-}
-
-interface DayActivities {
-  day: string;
-  activities: Activity[];
-}
 
 const weeklyActivities: DayActivities[] = [
   {

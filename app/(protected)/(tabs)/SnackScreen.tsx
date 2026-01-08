@@ -1,33 +1,9 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { MenuCategory, MenuProduct, ProductFromDB } from '@/types/types';
 import { collection, getFirestore, onSnapshot, query } from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
-
-
-interface ProductFromDB {
-  id: string,
-  category: string,
-  description: string,
-  name: string,
-  price: number,
-  service: string,
-}
-
-
-interface MenuCategory {
-  category: string;
-  products: MenuProduct[];
-}
-
-
-interface MenuProduct {
-  id: string;
-  name: string;
-  priceString: string;
-  price: number;
-  description: string;
-}
 
 
 export default function SnackScreen() {

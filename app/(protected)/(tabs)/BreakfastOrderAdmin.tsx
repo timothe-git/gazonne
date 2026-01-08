@@ -1,31 +1,9 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Order, OrderFromDB } from '@/types/types';
 import { collection, getFirestore, onSnapshot, query, where } from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
-
-/*interface FoodItem {
-  name: string;
-  price: number;
-}*/
-
-interface OrderFromDB {
-	chalet: string,
-	id: string,
-  order: {[key: string]: number}; // expected {"Chocolatine": 3, "Croissant": 0, "Pain": 1}
-  service: string;
-
-}
-
-interface Order {
-	chalet: string,
-	id: string,
-  order: {name: string; quantity: number;}[];
-  //service: string;
-}
-
-
-
 
 
 export default function BreakfastOrderAdmin() {

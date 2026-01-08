@@ -3,7 +3,7 @@ import { ThemedView } from '@/components/themed-view';
 import { authContext } from '@/utils/AuthContext';
 import { breakfastOrderContext } from '@/utils/BreakfastOrderContext';
 import { addDoc, collection, deleteDoc, doc, getDoc, getFirestore, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -27,13 +27,11 @@ export default function BreakfastOrderScreen() {
   const [isBeingModified, setIsBeingModified] = useState(false);
 
   const authState = useContext(authContext);
-  const router = useRouter();
 
   const db = getFirestore();
 
-
   const breakfastOrderState = useContext(breakfastOrderContext);
-  //console.log(breakfastOrderState);
+
 
   useEffect(() => {
     if (breakfastOrderState.orderId) {
@@ -41,10 +39,6 @@ export default function BreakfastOrderScreen() {
       retrieveOrder(breakfastOrderState.orderId);
     }
     }, []); // Empty dependency array means this runs once on mount
-
-  /*useEffect(() => {
-    console.log(order); // This will log the updated order whenever it changes
-}, [order]);*/
 
 
   const handleIncrease = (name: string) => {
