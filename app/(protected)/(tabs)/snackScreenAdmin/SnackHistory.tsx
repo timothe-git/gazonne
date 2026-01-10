@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { OrderFromDB } from '@/types/types';
-import { collection, deleteDoc, doc, getFirestore, onSnapshot, query, Timestamp, where } from '@react-native-firebase/firestore';
+import { collection, deleteDoc, doc, getFirestore, onSnapshot, orderBy, query, Timestamp, where } from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 
@@ -13,7 +13,7 @@ export default function SnackHistory() {
   
   useEffect(() => {
         
-    const q = query(collection(db, 'orders'), where('service', '==', 'snack')); // orderBy('createdAt', 'desc')
+    const q = query(collection(db, 'orders'), where('service', '==', 'snack'), orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const ordersFromDB: OrderFromDB[] = [];
