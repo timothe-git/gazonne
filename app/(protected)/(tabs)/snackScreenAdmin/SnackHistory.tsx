@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { OrderFromDB } from '@/types/types';
+import { OrderFromDB, OrderItemWithInstances } from '@/types/types';
 import { collection, deleteDoc, doc, getFirestore, onSnapshot, orderBy, query, Timestamp, where } from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
@@ -74,17 +74,38 @@ export default function SnackHistory() {
       <ThemedText style={styles.name}>{item.chalet}</ThemedText>
       <ThemedText style={styles.date}>{formatDate(item.createdAt)}</ThemedText>
 
-      {Object.entries(item.order).map(([name, quantity]) => {
-        if (quantity > 0) {
+      {Object.entries(item.order).map(
+        ([productName, productData]: [string, OrderItemWithInstances]) => {
+          const instances = productData.instances ?? [];
+
           return (
-            <ThemedView key={name} style={styles.orderItemContainer}>
-              <ThemedText style={styles.foodName}>{name}</ThemedText>
-              <ThemedText style={styles.foodQuantity}>x {quantity}</ThemedText>
+            <ThemedView key={productName} style={styles.orderItemContainer}>
+              {/* Product name and total quantity */}
+              <ThemedText style={styles.foodName}>
+                {productName} x {instances.length}
+              </ThemedText>
+
+              {/* Display each instance's extras or "sans suppléments" */}
+              {instances.map((instance, index) => {
+                const extras = instance.extras && Object.keys(instance.extras).length > 0
+                  ? Object.entries(instance.extras)
+                      .map(([name, qty]) => (qty > 1 ? `${name} x${qty}` : name))
+                      .join(', ')
+                  : 'sans suppléments';
+
+                return (
+                  <ThemedText key={instance.id} style={styles.extraText}>
+                    {index + 1}. {extras}
+                  </ThemedText>
+                );
+              })}
             </ThemedView>
           );
         }
-        return null;
-      })}
+      )}
+
+
+
 
       <TouchableOpacity style={styles.cancelButton} onPress={() => handleDelete(item.id)}>
         <ThemedText style={styles.buttonText}>Annuler la commande</ThemedText>
@@ -143,13 +164,21 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
   },
   orderItemContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     paddingVertical: 4,
   },
   foodName: {
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  extrasContainer: {
+    paddingLeft: 12,
+    marginTop: 4,
+  },
+  extraText: {
+    fontSize: 14,
+    color: '#777',
   },
   foodQuantity: {
     fontSize: 16,
@@ -172,5 +201,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
 
 	

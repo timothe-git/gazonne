@@ -1,17 +1,21 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MenuCategory, MenuProduct, OrderItem, ProductFromDB } from '@/types/types';
+import { MenuCategory, MenuProduct, OrderItemWithInstances, ProductFromDB } from '@/types/types';
 import { addDoc, collection, getFirestore, onSnapshot, query, serverTimestamp } from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { Alert, FlatList, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 
 export default function SnackScreenAdmin() {
 
-    const [order, setOrder] = useState<{ [productName: string]: OrderItem }>({});
-		const [chalet, setChalet] = useState("-1");
+    const [order, setOrder] = useState<{ [productName: string]: OrderItemWithInstances }>({});
+		const [chalet, setChalet] = useState<string>("");
     const [menuData, setMenuData] = useState<MenuCategory[]>([]);
     const [waitingForConfirmation, setWaitingForConfirmation] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<MenuProduct | null>(null);
+    const [tempExtras, setTempExtras] = useState<{ [extraName: string]: number }>({});
+    const [chaletModalVisible, setChaletModalVisible] = useState(false);
 
   
     const db = getFirestore();
@@ -62,110 +66,101 @@ export default function SnackScreenAdmin() {
         return () => unsubscribe();
       }, []);
   
-  
-    const handleIncrease = (productName: string) => {
+    // Generate unique ID for each item instance
+    const generateInstanceId = () => {
+      return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    };
+
+    const handleIncrease = (product: MenuProduct) => {
+      const hasExtras = product.extras && product.extras.length > 0;
+      
+      if (hasExtras) {
+        // Show modal to customize extras for this instance
+        setSelectedProduct(product);
+        setTempExtras({});
+        setModalVisible(true);
+      } else {
+        // Product without extras - add instance directly
+        addInstance(product.name, {});
+      }
+    };
+
+    const addInstance = (productName: string, extras: { [extraName: string]: number }) => {
       setOrder((prev) => {
-        const currentItem = prev[productName];
-        const currentQuantity = typeof currentItem === 'number' ? currentItem : (currentItem?.quantity || 0);
-        
-        // Convert old format to new format if needed
-        if (typeof currentItem === 'number') {
-          return {
-            ...prev,
-            [productName]: { quantity: currentQuantity + 1 }
-          };
-        }
+        const currentOrder = prev[productName] || { instances: [] };
+        const newInstance = {
+          id: generateInstanceId(),
+          extras: extras
+        };
         
         return {
           ...prev,
           [productName]: {
-            quantity: currentQuantity + 1,
-            extras: currentItem?.extras || {}
+            instances: [...currentOrder.instances, newInstance]
           }
         };
       });
     };
-  
-    const handleDecrease = (productName: string) => {
+
+    const handleConfirmModal = () => {
+      if (selectedProduct) {
+        addInstance(selectedProduct.name, tempExtras);
+        setModalVisible(false);
+        setSelectedProduct(null);
+        setTempExtras({});
+      }
+    };
+
+    const handleRemoveInstance = (productName: string, instanceId: string) => {
       setOrder((prev) => {
-        const currentItem = prev[productName];
-        const currentQuantity = typeof currentItem === 'number' ? currentItem : (currentItem?.quantity || 0);
+        const currentOrder = prev[productName];
+        if (!currentOrder) return prev;
         
-        if (currentQuantity > 1) {
-          // Convert old format to new format if needed
-          if (typeof currentItem === 'number') {
-            return { ...prev, [productName]: { quantity: currentQuantity - 1 } };
-          }
-          
-          return {
-            ...prev,
-            [productName]: {
-              quantity: currentQuantity - 1,
-              extras: currentItem?.extras || {}
-            }
-          };
-        } else {
-          // Remove item if quantity is 0
+        const newInstances = currentOrder.instances.filter(inst => inst.id !== instanceId);
+        
+        if (newInstances.length === 0) {
+          // Remove product if no instances left
           const { [productName]: _, ...newState } = prev;
           return newState;
         }
-      });
-    };
-
-    const handleExtraIncrease = (productName: string, extraName: string) => {
-      setOrder((prev) => {
-        const currentItem = prev[productName];
-        const currentQuantity = typeof currentItem === 'number' ? currentItem : (currentItem?.quantity || 0);
-        const currentExtras = typeof currentItem === 'number' ? {} : (currentItem?.extras || {});
-        const currentExtraQuantity = currentExtras[extraName] || 0;
         
         return {
           ...prev,
           [productName]: {
-            quantity: currentQuantity || 1, // Ensure product has at least quantity 1
-            extras: {
-              ...currentExtras,
-              [extraName]: currentExtraQuantity + 1
-            }
+            instances: newInstances
           }
         };
       });
     };
 
-    const handleExtraDecrease = (productName: string, extraName: string) => {
-      setOrder((prev) => {
-        const currentItem = prev[productName];
-        if (!currentItem || typeof currentItem === 'number') return prev;
-        
-        const currentExtras = currentItem.extras || {};
-        const currentExtraQuantity = currentExtras[extraName] || 0;
-        
-        if (currentExtraQuantity > 1) {
-          return {
-            ...prev,
-            [productName]: {
-              quantity: currentItem.quantity,
-              extras: {
-                ...currentExtras,
-                [extraName]: currentExtraQuantity - 1
-              }
-            }
-          };
+    const handleModalExtraIncrease = (extraName: string) => {
+      setTempExtras((prev) => ({
+        ...prev,
+        [extraName]: (prev[extraName] || 0) + 1
+      }));
+    };
+
+    const handleModalExtraDecrease = (extraName: string) => {
+      setTempExtras((prev) => {
+        const currentQuantity = prev[extraName] || 0;
+        if (currentQuantity > 1) {
+          return { ...prev, [extraName]: currentQuantity - 1 };
         } else {
-          // Remove extra if quantity is 0
-          const { [extraName]: _, ...remainingExtras } = currentExtras;
-          return {
-            ...prev,
-            [productName]: {
-              quantity: currentItem.quantity,
-              extras: Object.keys(remainingExtras).length > 0 ? remainingExtras : undefined
-            }
-          };
+          const { [extraName]: _, ...newState } = prev;
+          return newState;
         }
       });
     };
   
     const handleConfirmOrder = () => {
+      if (!chalet) {
+        Alert.alert('Chalet requis', 'Veuillez sélectionner un chalet avant de confirmer la commande.');
+        return;
+      }
+      if (Object.keys(order).length === 0) {
+        Alert.alert('Commande vide', 'Veuillez ajouter au moins un produit à la commande.');
+        return;
+      }
       setWaitingForConfirmation(true);
     };
 
@@ -196,50 +191,47 @@ export default function SnackScreenAdmin() {
   
   const renderItem = ({ item }: { item: MenuProduct }) => {
     const orderItem = order[item.name];
-    const quantity = typeof orderItem === 'number' ? orderItem : (orderItem?.quantity || 0);
-    const hasExtras = item.extras && item.extras.length > 0;
-    const extras = typeof orderItem === 'number' ? {} : (orderItem?.extras || {});
+    const instances = orderItem?.instances || [];
+    const quantity = instances.length;
 
     return (
       <ThemedView style={styles.itemContainer}>
         <ThemedView style={styles.productHeader}>
           <ThemedText style={styles.foodName}>{item.name}</ThemedText>
-          <ThemedView style={styles.quantityContainer}>
-            <TouchableOpacity style={styles.quantityButton} onPress={() => handleDecrease(item.name)}>
-              <ThemedText style={styles.buttonText}>-</ThemedText>
-            </TouchableOpacity>
-            <ThemedText style={styles.quantityText}>{quantity}</ThemedText>
-            <TouchableOpacity style={styles.quantityButton} onPress={() => handleIncrease(item.name)}>
-              <ThemedText style={styles.buttonText}>+</ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
+          <TouchableOpacity style={styles.addButton} onPress={() => handleIncrease(item)}>
+            <ThemedText style={styles.buttonText}>+ Ajouter</ThemedText>
+          </TouchableOpacity>
         </ThemedView>
-        {hasExtras && quantity > 0 && (
-          <ThemedView style={styles.extrasContainer}>
-            <ThemedText style={styles.extrasTitle}>Extras :</ThemedText>
-            {item.extras!.map((extra) => {
-              const extraQuantity = extras[extra.name] || 0;
-              return (
-                <ThemedView key={extra.name} style={styles.extraItem}>
-                  <ThemedText style={styles.extraName}>{extra.name}</ThemedText>
-                  <ThemedView style={styles.quantityContainer}>
-                    <TouchableOpacity 
-                      style={styles.quantityButton} 
-                      onPress={() => handleExtraDecrease(item.name, extra.name)}
-                    >
-                      <ThemedText style={styles.buttonText}>-</ThemedText>
-                    </TouchableOpacity>
-                    <ThemedText style={styles.quantityText}>{extraQuantity}</ThemedText>
-                    <TouchableOpacity 
-                      style={styles.quantityButton} 
-                      onPress={() => handleExtraIncrease(item.name, extra.name)}
-                    >
-                      <ThemedText style={styles.buttonText}>+</ThemedText>
-                    </TouchableOpacity>
-                  </ThemedView>
+        
+        {instances.length > 0 && (
+          <ThemedView style={styles.instancesContainer}>
+            {instances.map((instance, index) => (
+              <ThemedView key={instance.id} style={styles.instanceItem}>
+                <ThemedView style={styles.instanceHeader}>
+                  <ThemedText style={styles.instanceNumber}>{item.name} #{index + 1}</ThemedText>
+                  <TouchableOpacity 
+                    style={styles.removeButton} 
+                    onPress={() => handleRemoveInstance(item.name, instance.id)}
+                  >
+                    <ThemedText style={styles.removeButtonText}>✕</ThemedText>
+                  </TouchableOpacity>
                 </ThemedView>
-              );
-            })}
+                {Object.keys(instance.extras).length > 0 && (
+                  <ThemedView style={styles.instanceExtras}>
+                    {Object.entries(instance.extras).map(([extraName, extraQuantity]) => (
+                      extraQuantity > 0 && (
+                        <ThemedText key={extraName} style={styles.instanceExtraText}>
+                          • {extraName}{extraQuantity > 1 ? ` x${extraQuantity}` : ''}
+                        </ThemedText>
+                      )
+                    ))}
+                  </ThemedView>
+                )}
+                {Object.keys(instance.extras).length === 0 && item.extras && item.extras.length > 0 && (
+                  <ThemedText style={styles.noExtrasText}>Aucun extra</ThemedText>
+                )}
+              </ThemedView>
+            ))}
           </ThemedView>
         )}
       </ThemedView>
@@ -264,35 +256,41 @@ export default function SnackScreenAdmin() {
 				
         {waitingForConfirmation ? (
           <ThemedView style={styles.container}>
-            <ThemedView style={styles.confirmationContainer}>
-            <ThemedText style={styles.confirmationText}>La commande :</ThemedText>
-            {Object.entries(order).map(([productName, orderItem]) => {
-              const quantity = typeof orderItem === 'number' ? orderItem : (orderItem?.quantity || 0);
-              const extras = typeof orderItem === 'number' ? {} : (orderItem?.extras || {});
-              
-              if (quantity > 0) {
-                return (
-                  <ThemedView key={productName} style={styles.orderItemContainer}>
-                    <ThemedView>
-                      <ThemedText style={styles.foodName}>{productName}</ThemedText>
-                      <ThemedText style={styles.foodQuantity}>x {quantity}</ThemedText>
-                      {Object.keys(extras).length > 0 && Object.entries(extras).map(([extraName, extraQuantity]) => {
-                        if (extraQuantity > 0) {
-                          return (
-                            <ThemedText key={extraName} style={styles.extraQuantity}>
-                              • {extraName}: x {extraQuantity}
-                            </ThemedText>
-                          );
-                        }
-                        return null;
-                      })}
-                    </ThemedView>
-                  </ThemedView>
-                );
-              }
-              return null;
-            })}
-            </ThemedView>
+            <ScrollView style={styles.confirmationScrollView}>
+              <ThemedView style={styles.confirmationContainer}>
+                <ThemedText style={styles.confirmationText}>La commande :</ThemedText>
+                {Object.entries(order).map(([productName, orderItem]) => {
+                  const instances = orderItem.instances || [];
+                  
+                  if (instances.length > 0) {
+                    return instances.map((instance, index) => (
+                      <ThemedView key={instance.id} style={styles.orderItemContainer}>
+                        <ThemedView>
+                          <ThemedText style={styles.foodName}>
+                            {productName} #{index + 1}
+                          </ThemedText>
+                          {Object.keys(instance.extras).length > 0 ? (
+                            Object.entries(instance.extras).map(([extraName, extraQuantity]) => {
+                              if (extraQuantity > 0) {
+                                return (
+                                  <ThemedText key={extraName} style={styles.extraQuantity}>
+                                    • {extraName}{extraQuantity > 1 ? ` x${extraQuantity}` : ''}
+                                  </ThemedText>
+                                );
+                              }
+                              return null;
+                            })
+                          ) : (
+                            <ThemedText style={styles.extraQuantity}>Aucun extra</ThemedText>
+                          )}
+                        </ThemedView>
+                      </ThemedView>
+                    ));
+                  }
+                  return null;
+                })}
+              </ThemedView>
+            </ScrollView>
             <TouchableOpacity style={styles.confirmButton} onPress={finalizeOrder}>
               <ThemedText style={styles.buttonText}>Confirmer la commande</ThemedText>
             </TouchableOpacity>
@@ -309,20 +307,120 @@ export default function SnackScreenAdmin() {
               contentContainerStyle={styles.listContainer}
             />
             <ThemedView style={styles.pickerContainer}>
-            <ThemedText style={styles.label}>Chalet :</ThemedText>
-            <TextInput
-              style={styles.picker}
-              placeholder="Chalet"
-              value={chalet}
-              onChangeText={setChalet}
-              autoCapitalize="none"
-            />
+              <ThemedText style={styles.labelInline}>Chalet :</ThemedText>
+              <ThemedView style={styles.dropdownWrapper}>
+                <TouchableOpacity 
+                  style={[styles.chaletPicker, !chalet && styles.chaletPickerPlaceholder]}
+                  onPress={() => setChaletModalVisible(!chaletModalVisible)}
+                >
+                  <ThemedText style={[styles.chaletPickerText, !chalet && styles.chaletPickerPlaceholderText]}>
+                    {chalet ? `Chalet ${chalet}` : 'Sélectionnez un chalet'}
+                  </ThemedText>
+                  <ThemedText style={[styles.chaletPickerArrow, chaletModalVisible && styles.chaletPickerArrowOpen]}>
+                    ▼
+                  </ThemedText>
+                </TouchableOpacity>
+                
+                {chaletModalVisible && (
+                  <View style={styles.dropdownList}>
+                    <FlatList
+                      data={Array.from({ length: 28 }, (_, i) => (i + 1).toString())}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity
+                          style={[styles.chaletOption, chalet === item && styles.chaletOptionSelected]}
+                          onPress={() => {
+                            setChalet(item);
+                            setChaletModalVisible(false);
+                          }}
+                        >
+                          <ThemedText style={[styles.chaletOptionText, chalet === item && styles.chaletOptionTextSelected]}>
+                            Chalet {item}
+                          </ThemedText>
+                          {chalet === item && (
+                            <ThemedText style={styles.chaletCheckmark}>✓</ThemedText>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                      keyExtractor={(item) => item}
+                      style={styles.chaletOptionsList}
+                      nestedScrollEnabled={true}
+                    />
+                  </View>
+                )}
+              </ThemedView>
             </ThemedView>
             <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmOrder}>
               <ThemedText style={styles.buttonText}>Confirmer la commande</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         )}
+
+        {/* Modal for customizing extras */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(false);
+            setSelectedProduct(null);
+            setTempExtras({});
+          }}
+        >
+          <ThemedView style={styles.modalOverlay}>
+            <ThemedView style={styles.modalContent}>
+              <ThemedText style={styles.modalTitle}>
+                Personnaliser {selectedProduct?.name}
+              </ThemedText>
+              
+              {selectedProduct?.extras && selectedProduct.extras.length > 0 && (
+                <ScrollView style={styles.modalExtrasList}>
+                  {selectedProduct.extras.map((extra) => {
+                    const quantity = tempExtras[extra.name] || 0;
+                    return (
+                      <ThemedView key={extra.name} style={styles.modalExtraItem}>
+                        <ThemedText style={styles.modalExtraName}>{extra.name}</ThemedText>
+                        <ThemedView style={styles.quantityContainer}>
+                          <TouchableOpacity 
+                            style={styles.quantityButton} 
+                            onPress={() => handleModalExtraDecrease(extra.name)}
+                          >
+                            <ThemedText style={styles.buttonText}>-</ThemedText>
+                          </TouchableOpacity>
+                          <ThemedText style={styles.quantityText}>{quantity}</ThemedText>
+                          <TouchableOpacity 
+                            style={styles.quantityButton} 
+                            onPress={() => handleModalExtraIncrease(extra.name)}
+                          >
+                            <ThemedText style={styles.buttonText}>+</ThemedText>
+                          </TouchableOpacity>
+                        </ThemedView>
+                      </ThemedView>
+                    );
+                  })}
+                </ScrollView>
+              )}
+              
+              <ThemedView style={styles.modalButtons}>
+                <TouchableOpacity 
+                  style={styles.modalCancelButton} 
+                  onPress={() => {
+                    setModalVisible(false);
+                    setSelectedProduct(null);
+                    setTempExtras({});
+                  }}
+                >
+                  <ThemedText style={styles.buttonText}>Annuler</ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.modalConfirmButton} 
+                  onPress={handleConfirmModal}
+                >
+                  <ThemedText style={styles.buttonText}>Ajouter</ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+        </Modal>
 
 
       </ThemedView>
@@ -430,11 +528,106 @@ export default function SnackScreenAdmin() {
   },
   pickerContainer: {
     backgroundColor: '#f8f8f8',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    position: 'relative',
+    zIndex: 1,
   },
-  picker: {
-    height: 50,
-    width: '100%',
+  labelInline: {
+    fontSize: 16,
     color: '#343a40',
+    fontWeight: '500',
+    minWidth: 70,
+  },
+  dropdownWrapper: {
+    flex: 1,
+    position: 'relative',
+    zIndex: 1000,
+  },
+  chaletPicker: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    elevation: 1,
+    minWidth: 180,
+  },
+  chaletPickerPlaceholder: {
+    borderColor: '#bbb',
+  },
+  chaletPickerText: {
+    fontSize: 16,
+    color: '#343a40',
+    flex: 1,
+  },
+  chaletPickerPlaceholderText: {
+    color: '#999',
+  },
+  chaletPickerArrow: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 8,
+    transform: [{ rotate: '0deg' }],
+  },
+  chaletPickerArrowOpen: {
+    transform: [{ rotate: '180deg' }],
+  },
+  dropdownList: {
+    position: 'absolute',
+    bottom: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    marginBottom: 4,
+    maxHeight: 300,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 1001,
+  },
+  chaletOptionsList: {
+    maxHeight: 300,
+  },
+  chaletOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  chaletOptionSelected: {
+    backgroundColor: '#e3f2fd',
+  },
+  chaletOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  chaletOptionTextSelected: {
+    color: '#1976d2',
+    fontWeight: '600',
+  },
+  chaletCheckmark: {
+    fontSize: 18,
+    color: '#4CAF50',
+    fontWeight: 'bold',
   },
   modalView: {
     margin: 20,
@@ -496,14 +689,130 @@ export default function SnackScreenAdmin() {
     fontWeight: 'bold',
     marginBottom: 10,
   },
-  cancelButton: {
-    backgroundColor: '#f44336',
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginHorizontal: 16,
-    marginVertical: 4,
-    alignItems: 'center',
-  },
+    cancelButton: {
+      backgroundColor: '#f44336',
+      borderRadius: 5,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      marginHorizontal: 16,
+      marginVertical: 4,
+      alignItems: 'center',
+    },
+    addButton: {
+      backgroundColor: '#4CAF50',
+      borderRadius: 5,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+    },
+    instancesContainer: {
+      marginTop: 12,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderTopColor: '#e0e0e0',
+    },
+    instanceItem: {
+      backgroundColor: '#f5f5f5',
+      borderRadius: 6,
+      padding: 12,
+      marginVertical: 6,
+    },
+    instanceHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    instanceNumber: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: '#333',
+    },
+    removeButton: {
+      backgroundColor: '#f44336',
+      borderRadius: 15,
+      width: 30,
+      height: 30,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    removeButtonText: {
+      color: '#fff',
+      fontSize: 18,
+      fontWeight: 'bold',
+    },
+    instanceExtras: {
+      marginTop: 4,
+    },
+    instanceExtraText: {
+      fontSize: 14,
+      color: '#666',
+      marginTop: 2,
+    },
+    noExtrasText: {
+      fontSize: 14,
+      color: '#999',
+      fontStyle: 'italic',
+      marginTop: 4,
+    },
+    confirmationScrollView: {
+      flex: 1,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      backgroundColor: '#fff',
+      borderRadius: 20,
+      padding: 24,
+      width: '85%',
+      maxHeight: '70%',
+      elevation: 5,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 16,
+      textAlign: 'center',
+    },
+    modalExtrasList: {
+      maxHeight: 300,
+      marginBottom: 16,
+    },
+    modalExtraItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: '#e0e0e0',
+    },
+    modalExtraName: {
+      fontSize: 16,
+      color: '#333',
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 8,
+    },
+    modalCancelButton: {
+      backgroundColor: '#f44336',
+      borderRadius: 5,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      flex: 0.48,
+      alignItems: 'center',
+    },
+    modalConfirmButton: {
+      backgroundColor: '#4CAF50',
+      borderRadius: 5,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      flex: 0.48,
+      alignItems: 'center',
+    },
   });
   

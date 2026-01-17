@@ -36,15 +36,19 @@ export interface MenuProduct {
   extras?: ProductExtra[];
 }
 
-export interface OrderItem {
-  quantity: number;
-  extras?: { [extraName: string]: number };
+export interface OrderItemInstance {
+  id: string;
+  extras: { [extraName: string]: number };
+}
+
+export interface OrderItemWithInstances {
+  instances: OrderItemInstance[];
 }
 
 export interface OrderFromDB {
 	chalet: string,
 	id: string,
-  order: {[productName: string]: OrderItem | number}; // Support both old format (number) and new format (OrderItem)
+  order: {[productName: string]: OrderItemWithInstances};
   service: string;
 	createdAt: Timestamp,
 }
