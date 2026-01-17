@@ -1,5 +1,5 @@
-import { authContext } from '@/utils/AuthContext';
-import { breakfastOrderContext, BreakfastOrderProvider } from '@/utils/BreakfastOrderContext';
+import { authContext } from '@/context/AuthContext';
+import { breakfastOrderContext, BreakfastOrderProvider } from '@/context/BreakfastOrderContext';
 import { Stack } from 'expo-router';
 import { useContext } from 'react';
 import 'react-native-reanimated';

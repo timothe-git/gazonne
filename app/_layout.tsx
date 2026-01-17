@@ -1,4 +1,4 @@
-import { AuthProvider } from '@/utils/AuthContext';
+import { AuthProvider } from '@/context/AuthContext';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Link, Stack } from 'expo-router';

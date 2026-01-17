@@ -4,7 +4,7 @@ import { Button, StyleSheet, TextInput } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { authContext } from '@/utils/AuthContext';
+import { authContext } from '@/context/AuthContext';
 import { Link } from 'expo-router';
 
 

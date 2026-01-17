@@ -2,7 +2,7 @@ import { Button, StyleSheet } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedView } from '@/components/themed-view';
-import { authContext } from '@/utils/AuthContext';
+import { authContext } from '@/context/AuthContext';
 import { Image } from 'expo-image';
 import { useContext } from 'react';
 

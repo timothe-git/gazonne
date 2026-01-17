@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { authContext } from '@/utils/AuthContext';
-import { breakfastOrderContext } from '@/utils/BreakfastOrderContext';
+import { authContext } from '@/context/AuthContext';
+import { breakfastOrderContext } from '@/context/BreakfastOrderContext';
 import { addDoc, collection, deleteDoc, doc, getDoc, getFirestore, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
 import { Link } from 'expo-router';
 import { useContext, useEffect, useState } from 'react';

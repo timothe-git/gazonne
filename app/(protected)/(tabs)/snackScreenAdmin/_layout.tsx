@@ -1,4 +1,4 @@
-import { authContext } from '@/utils/AuthContext';
+import { authContext } from '@/context/AuthContext';
 import { Link, Stack } from 'expo-router';
 import 'react-native-reanimated';
 
