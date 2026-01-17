@@ -7,6 +7,11 @@ export interface Message {
   createdAt: Timestamp;
 }
 
+export interface ProductExtra {
+  name: string;
+  price: number;
+}
+
 export interface ProductFromDB {
   id: string,
   category: string,
@@ -14,6 +19,7 @@ export interface ProductFromDB {
   name: string,
   price: number,
   service: string,
+  extras?: ProductExtra[],
 }
 
 export interface MenuCategory {
@@ -27,12 +33,18 @@ export interface MenuProduct {
   priceString: string;
   price: number;
   description: string;
+  extras?: ProductExtra[];
+}
+
+export interface OrderItem {
+  quantity: number;
+  extras?: { [extraName: string]: number };
 }
 
 export interface OrderFromDB {
 	chalet: string,
 	id: string,
-  order: {[key: string]: number};
+  order: {[productName: string]: OrderItem | number}; // Support both old format (number) and new format (OrderItem)
   service: string;
 	createdAt: Timestamp,
 }

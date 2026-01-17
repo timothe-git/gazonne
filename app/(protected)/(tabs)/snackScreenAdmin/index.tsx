@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MenuCategory, MenuProduct, ProductFromDB } from '@/types/types';
+import { MenuCategory, MenuProduct, OrderItem, ProductFromDB } from '@/types/types';
 import { addDoc, collection, getFirestore, onSnapshot, query, serverTimestamp } from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
@@ -8,7 +8,7 @@ import { FlatList, StyleSheet, TextInput, TouchableOpacity } from 'react-native'
 
 export default function SnackScreenAdmin() {
 
-    const [order, setOrder] = useState<{ [key: string]: number }>({});
+    const [order, setOrder] = useState<{ [productName: string]: OrderItem }>({});
 		const [chalet, setChalet] = useState("-1");
     const [menuData, setMenuData] = useState<MenuCategory[]>([]);
     const [waitingForConfirmation, setWaitingForConfirmation] = useState(false);
@@ -47,7 +47,8 @@ export default function SnackScreenAdmin() {
               name: product.name,
               priceString: `${product.price}€`,
               price: product.price,
-              description: product.description
+              description: product.description,
+              extras: product.extras || undefined
             };
 
             // Add the MenuProduct to the corresponding MenuCategory
@@ -62,20 +63,106 @@ export default function SnackScreenAdmin() {
       }, []);
   
   
-    const handleIncrease = (name: string) => {
-      setOrder((prev) => ({ ...prev, [name]: (prev[name] || 0) + 1 }));
+    const handleIncrease = (productName: string) => {
+      setOrder((prev) => {
+        const currentItem = prev[productName];
+        const currentQuantity = typeof currentItem === 'number' ? currentItem : (currentItem?.quantity || 0);
+        
+        // Convert old format to new format if needed
+        if (typeof currentItem === 'number') {
+          return {
+            ...prev,
+            [productName]: { quantity: currentQuantity + 1 }
+          };
+        }
+        
+        return {
+          ...prev,
+          [productName]: {
+            quantity: currentQuantity + 1,
+            extras: currentItem?.extras || {}
+          }
+        };
+      });
     };
   
-    const handleDecrease = (name: string) => {
+    const handleDecrease = (productName: string) => {
       setOrder((prev) => {
-        const currentCount = prev[name] || 0;
-        if (currentCount > 1) {
-            return { ...prev, [name]: currentCount - 1 };
-        } else {  // We do not ant to keep items with 0 quantity
-            const { [name]: _, ...newState } = prev;
-            return newState;
+        const currentItem = prev[productName];
+        const currentQuantity = typeof currentItem === 'number' ? currentItem : (currentItem?.quantity || 0);
+        
+        if (currentQuantity > 1) {
+          // Convert old format to new format if needed
+          if (typeof currentItem === 'number') {
+            return { ...prev, [productName]: { quantity: currentQuantity - 1 } };
+          }
+          
+          return {
+            ...prev,
+            [productName]: {
+              quantity: currentQuantity - 1,
+              extras: currentItem?.extras || {}
+            }
+          };
+        } else {
+          // Remove item if quantity is 0
+          const { [productName]: _, ...newState } = prev;
+          return newState;
         }
-    });
+      });
+    };
+
+    const handleExtraIncrease = (productName: string, extraName: string) => {
+      setOrder((prev) => {
+        const currentItem = prev[productName];
+        const currentQuantity = typeof currentItem === 'number' ? currentItem : (currentItem?.quantity || 0);
+        const currentExtras = typeof currentItem === 'number' ? {} : (currentItem?.extras || {});
+        const currentExtraQuantity = currentExtras[extraName] || 0;
+        
+        return {
+          ...prev,
+          [productName]: {
+            quantity: currentQuantity || 1, // Ensure product has at least quantity 1
+            extras: {
+              ...currentExtras,
+              [extraName]: currentExtraQuantity + 1
+            }
+          }
+        };
+      });
+    };
+
+    const handleExtraDecrease = (productName: string, extraName: string) => {
+      setOrder((prev) => {
+        const currentItem = prev[productName];
+        if (!currentItem || typeof currentItem === 'number') return prev;
+        
+        const currentExtras = currentItem.extras || {};
+        const currentExtraQuantity = currentExtras[extraName] || 0;
+        
+        if (currentExtraQuantity > 1) {
+          return {
+            ...prev,
+            [productName]: {
+              quantity: currentItem.quantity,
+              extras: {
+                ...currentExtras,
+                [extraName]: currentExtraQuantity - 1
+              }
+            }
+          };
+        } else {
+          // Remove extra if quantity is 0
+          const { [extraName]: _, ...remainingExtras } = currentExtras;
+          return {
+            ...prev,
+            [productName]: {
+              quantity: currentItem.quantity,
+              extras: Object.keys(remainingExtras).length > 0 ? remainingExtras : undefined
+            }
+          };
+        }
+      });
     };
   
     const handleConfirmOrder = () => {
@@ -108,20 +195,53 @@ export default function SnackScreenAdmin() {
 
   
   const renderItem = ({ item }: { item: MenuProduct }) => {
-    const quantity = order[item.name] || 0;
+    const orderItem = order[item.name];
+    const quantity = typeof orderItem === 'number' ? orderItem : (orderItem?.quantity || 0);
+    const hasExtras = item.extras && item.extras.length > 0;
+    const extras = typeof orderItem === 'number' ? {} : (orderItem?.extras || {});
 
     return (
       <ThemedView style={styles.itemContainer}>
-        <ThemedText style={styles.foodName}>{item.name}</ThemedText>
-        <ThemedView style={styles.quantityContainer}>
-          <TouchableOpacity style={styles.quantityButton} onPress={() => handleDecrease(item.name)}>
-            <ThemedText style={styles.buttonText}>-</ThemedText>
-          </TouchableOpacity>
-          <ThemedText style={styles.quantityText}>{quantity}</ThemedText>
-          <TouchableOpacity style={styles.quantityButton} onPress={() => handleIncrease(item.name)}>
-            <ThemedText style={styles.buttonText}>+</ThemedText>
-          </TouchableOpacity>
+        <ThemedView style={styles.productHeader}>
+          <ThemedText style={styles.foodName}>{item.name}</ThemedText>
+          <ThemedView style={styles.quantityContainer}>
+            <TouchableOpacity style={styles.quantityButton} onPress={() => handleDecrease(item.name)}>
+              <ThemedText style={styles.buttonText}>-</ThemedText>
+            </TouchableOpacity>
+            <ThemedText style={styles.quantityText}>{quantity}</ThemedText>
+            <TouchableOpacity style={styles.quantityButton} onPress={() => handleIncrease(item.name)}>
+              <ThemedText style={styles.buttonText}>+</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
         </ThemedView>
+        {hasExtras && quantity > 0 && (
+          <ThemedView style={styles.extrasContainer}>
+            <ThemedText style={styles.extrasTitle}>Extras :</ThemedText>
+            {item.extras!.map((extra) => {
+              const extraQuantity = extras[extra.name] || 0;
+              return (
+                <ThemedView key={extra.name} style={styles.extraItem}>
+                  <ThemedText style={styles.extraName}>{extra.name}</ThemedText>
+                  <ThemedView style={styles.quantityContainer}>
+                    <TouchableOpacity 
+                      style={styles.quantityButton} 
+                      onPress={() => handleExtraDecrease(item.name, extra.name)}
+                    >
+                      <ThemedText style={styles.buttonText}>-</ThemedText>
+                    </TouchableOpacity>
+                    <ThemedText style={styles.quantityText}>{extraQuantity}</ThemedText>
+                    <TouchableOpacity 
+                      style={styles.quantityButton} 
+                      onPress={() => handleExtraIncrease(item.name, extra.name)}
+                    >
+                      <ThemedText style={styles.buttonText}>+</ThemedText>
+                    </TouchableOpacity>
+                  </ThemedView>
+                </ThemedView>
+              );
+            })}
+          </ThemedView>
+        )}
       </ThemedView>
     );
   };
@@ -146,12 +266,27 @@ export default function SnackScreenAdmin() {
           <ThemedView style={styles.container}>
             <ThemedView style={styles.confirmationContainer}>
             <ThemedText style={styles.confirmationText}>La commande :</ThemedText>
-            {Object.entries(order).map(([name, quantity]) => {
+            {Object.entries(order).map(([productName, orderItem]) => {
+              const quantity = typeof orderItem === 'number' ? orderItem : (orderItem?.quantity || 0);
+              const extras = typeof orderItem === 'number' ? {} : (orderItem?.extras || {});
+              
               if (quantity > 0) {
                 return (
-                  <ThemedView key={name} style={styles.orderItemContainer}>
-                    <ThemedText style={styles.foodName}>{name}</ThemedText>
-                    <ThemedText style={styles.foodQuantity}>x {quantity}</ThemedText>
+                  <ThemedView key={productName} style={styles.orderItemContainer}>
+                    <ThemedView>
+                      <ThemedText style={styles.foodName}>{productName}</ThemedText>
+                      <ThemedText style={styles.foodQuantity}>x {quantity}</ThemedText>
+                      {Object.keys(extras).length > 0 && Object.entries(extras).map(([extraName, extraQuantity]) => {
+                        if (extraQuantity > 0) {
+                          return (
+                            <ThemedText key={extraName} style={styles.extraQuantity}>
+                              • {extraName}: x {extraQuantity}
+                            </ThemedText>
+                          );
+                        }
+                        return null;
+                      })}
+                    </ThemedView>
                   </ThemedView>
                 );
               }
@@ -211,9 +346,40 @@ export default function SnackScreenAdmin() {
       padding: 16,
       marginVertical: 8,
       elevation: 2,
+    },
+    productHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+    },
+    extrasContainer: {
+      marginTop: 12,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderTopColor: '#e0e0e0',
+    },
+    extrasTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 8,
+      color: '#666',
+    },
+    extraItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginVertical: 4,
+      paddingLeft: 12,
+    },
+    extraName: {
+      fontSize: 15,
+      color: '#555',
+    },
+    extraQuantity: {
+      fontSize: 14,
+      color: '#666',
+      marginLeft: 8,
+      marginTop: 2,
     },
     foodName: {
       fontSize: 18,
