@@ -36,20 +36,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="SnackScreen"
+        name="MenuScreen"
         options={{
-          title: 'Le snack',
+          title: 'Menu',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-          href: authState.isAdmin ? null : '/SnackScreen',
+          href: authState.isAdmin ? null : '/MenuScreen',
         }}
       />
       <Tabs.Screen
-        name="snackScreenAdmin"
+        name="order"
         options={{
-          title: 'Le snack',
-          header: () => null,
+          title: 'Commande',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-          href: authState.isAdmin ? '/snackScreenAdmin' : null,
+          href: authState.isAdmin ? '/order' : null,
         }}
       />
       <Tabs.Screen

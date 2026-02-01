@@ -1,7 +1,9 @@
+import ServiceSelector from '@/components/ServiceSelector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { OrderFromDB, OrderItemWithInstances } from '@/types/types';
 import { collection, deleteDoc, doc, getFirestore, onSnapshot, orderBy, query, Timestamp, where } from '@react-native-firebase/firestore';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 
@@ -9,11 +11,13 @@ import { Alert, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 export default function SnackHistory() {
 
   const [allOrders, setAllOrders] = useState<OrderFromDB[]>([]);
+  const [selectedService, setSelectedService] = useState<string>('Snack');
   const db = getFirestore();
+  const router = useRouter();
   
   useEffect(() => {
         
-    const q = query(collection(db, 'orders'), where('service', '==', 'snack'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'orders'), where('service', '==', selectedService), orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const ordersFromDB: OrderFromDB[] = [];
@@ -29,7 +33,7 @@ export default function SnackHistory() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [selectedService]);
 
 
   const handleDelete = (orderId: string) => {
@@ -68,9 +72,19 @@ export default function SnackHistory() {
 		return timestamp.toDate().toLocaleString();
   };
 
+  const handleEditOrder = (order: OrderFromDB) => {
+    router.push({
+      pathname: '/(protected)/(tabs)/order',
+      params: {
+        editOrder: JSON.stringify(order),
+        service: order.service,
+      },
+    });
+  };
+
   // Render each item
   const renderItem = ({ item }: { item: OrderFromDB }) => (
-    <ThemedView style={styles.itemContainer}>
+    <TouchableOpacity style={styles.itemContainer} onPress={() => handleEditOrder(item)}>
       <ThemedText style={styles.name}>{item.chalet}</ThemedText>
       <ThemedText style={styles.date}>{formatDate(item.createdAt)}</ThemedText>
 
@@ -110,21 +124,30 @@ export default function SnackHistory() {
       <TouchableOpacity style={styles.cancelButton} onPress={() => handleDelete(item.id)}>
         <ThemedText style={styles.buttonText}>Annuler la commande</ThemedText>
       </TouchableOpacity>
-    </ThemedView>
+    </TouchableOpacity>
   );
 
   return (
-    <FlatList
-      data={allOrders}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={styles.listContainer}
-    />
+    <ThemedView style={styles.container}>
+      <ServiceSelector 
+        selectedService={selectedService}
+        onServiceChange={setSelectedService}
+      />
+      <FlatList
+        data={allOrders}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
+      />
+    </ThemedView>
   );
 };
 
 // Styles for the component
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   listContainer: {
     padding: 16,
   },

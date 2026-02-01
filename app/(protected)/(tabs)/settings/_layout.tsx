@@ -1,15 +1,9 @@
-import { authContext } from '@/context/AuthContext';
 import { Stack } from 'expo-router';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useContext } from 'react';
 
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
-	const authState = useContext(authContext);
+export default function SettingsLayout() {
   
   return (
           <Stack>
@@ -33,6 +27,14 @@ export default function RootLayout() {
               name="products/form"
               options={{
                 title: 'Formulaire produit',
+                animation: "none",
+              }}
+            />
+
+            <Stack.Screen
+              name="order-history"
+              options={{
+                title: 'Historique des commandes',
                 animation: "none",
               }}
             />

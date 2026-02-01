@@ -1,29 +1,51 @@
+import ServiceSelector from '@/components/ServiceSelector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MenuCategory, MenuProduct, OrderItemWithInstances, ProductFromDB } from '@/types/types';
-import { addDoc, collection, getFirestore, onSnapshot, query, serverTimestamp } from '@react-native-firebase/firestore';
+import { addDoc, collection, doc, getFirestore, onSnapshot, query, serverTimestamp, updateDoc, where } from '@react-native-firebase/firestore';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 
-export default function SnackScreenAdmin() {
+export default function OrderScreen() {
 
     const [order, setOrder] = useState<{ [productName: string]: OrderItemWithInstances }>({});
 		const [chalet, setChalet] = useState<string>("");
+    const [selectedService, setSelectedService] = useState<string>("Snack");
     const [menuData, setMenuData] = useState<MenuCategory[]>([]);
     const [waitingForConfirmation, setWaitingForConfirmation] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<MenuProduct | null>(null);
     const [tempExtras, setTempExtras] = useState<{ [extraName: string]: number }>({});
     const [chaletModalVisible, setChaletModalVisible] = useState(false);
+    const [isEditingOrder, setIsEditingOrder] = useState(false);
+    const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
 
   
     const db = getFirestore();
+    const router = useRouter();
+    const params = useLocalSearchParams();
 
+    // Load editing order if present
+    useEffect(() => {
+      if (params.editOrder) {
+        try {
+          const editOrder = JSON.parse(params.editOrder as string);
+          setEditingOrderId(editOrder.id);
+          setChalet(editOrder.chalet);
+          setSelectedService(editOrder.service || 'Snack');
+          setOrder(editOrder.order);
+          setIsEditingOrder(true);
+        } catch (e) {
+          console.error('Error parsing edit order:', e);
+        }
+      }
+    }, [params.editOrder]);
 
     useEffect(() => {
         
-        const q = query(collection(db, 'products'));
+        const q = query(collection(db, 'products'), where('services', 'array-contains', selectedService));
     
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
           const productsFromDB: ProductFromDB[] = [];
@@ -64,7 +86,7 @@ export default function SnackScreenAdmin() {
         });
     
         return () => unsubscribe();
-      }, []);
+      }, [selectedService]);
   
     // Generate unique ID for each item instance
     const generateInstanceId = () => {
@@ -166,25 +188,57 @@ export default function SnackScreenAdmin() {
 
     const finalizeOrder = () => {
       createOrder();
+      resetOrder();
+    };
+
+    const resetOrder = () => {
       setOrder({});
+      setIsEditingOrder(false);
+      setEditingOrderId(null);
+      setChalet("");
+    };
+
+    const cancelOrder = () => {
       setWaitingForConfirmation(false);
+      if (isEditingOrder) {
+        resetOrder();
+      }
     };
   
 
   
     const createOrder = async () => {
-      const orderToSend = {
-				order: order,
-				"chalet": chalet,
-				'service': 'snack',
-				createdAt: serverTimestamp(),
-			};
-    
-      try {
-        const docRef = await addDoc(collection(db, "orders"), orderToSend);
-        console.log("Document written with ID: ", docRef.id);
-      } catch (e) {
-        console.error("Error adding document: ", e);
+      if (isEditingOrder && editingOrderId) {
+        // Update existing order
+        const orderToSend = {
+          order: order,
+          "chalet": chalet,
+          'service': selectedService,
+          updatedAt: serverTimestamp(),
+        };
+        
+        try {
+          const docRef = doc(db, "orders", editingOrderId);
+          await updateDoc(docRef, orderToSend);
+          console.log("Document updated with ID: ", editingOrderId);
+        } catch (e) {
+          console.error("Error updating document: ", e);
+        }
+      } else {
+        // Create new order
+        const orderToSend = {
+          order: order,
+          "chalet": chalet,
+          'service': selectedService,
+          createdAt: serverTimestamp(),
+        };
+      
+        try {
+          const docRef = await addDoc(collection(db, "orders"), orderToSend);
+          console.log("Document written with ID: ", docRef.id);
+        } catch (e) {
+          console.error("Error adding document: ", e);
+        }
       }
     }
 
@@ -292,14 +346,23 @@ export default function SnackScreenAdmin() {
               </ThemedView>
             </ScrollView>
             <TouchableOpacity style={styles.confirmButton} onPress={finalizeOrder}>
-              <ThemedText style={styles.buttonText}>Confirmer la commande</ThemedText>
+              <ThemedText style={styles.buttonText}>{isEditingOrder ? 'Mettre à jour' : 'Confirmer la commande'}</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelButton} onPress={() => setWaitingForConfirmation(false)}>
-              <ThemedText style={styles.buttonText}>Annuler</ThemedText>
+            <TouchableOpacity style={styles.cancelButton} onPress={cancelOrder}>
+              <ThemedText style={styles.buttonText}>{isEditingOrder ? 'Annuler' : 'Retour'}</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         ) : (
           <ThemedView style={styles.container}>
+            <ServiceSelector 
+              selectedService={selectedService}
+              onServiceChange={(service) => {
+                setSelectedService(service);
+                if (!isEditingOrder) {
+                  setOrder({});
+                }
+              }}
+            />
             <FlatList
               data={menuData}
               renderItem={renderCategory}
@@ -350,7 +413,7 @@ export default function SnackScreenAdmin() {
               </ThemedView>
             </ThemedView>
             <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmOrder}>
-              <ThemedText style={styles.buttonText}>Confirmer la commande</ThemedText>
+              <ThemedText style={styles.buttonText}>{isEditingOrder ? 'Mettre à jour' : 'Confirmer la commande'}</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         )}

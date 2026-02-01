@@ -1,21 +1,23 @@
+import ServiceSelector from '@/components/ServiceSelector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MenuCategory, MenuProduct, ProductFromDB } from '@/types/types';
-import { collection, getFirestore, onSnapshot, query } from '@react-native-firebase/firestore';
+import { collection, getFirestore, onSnapshot, query, where } from '@react-native-firebase/firestore';
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 
 
-export default function SnackScreen() {
+export default function MenuScreen() {
 
   const [menuData, setMenuData] = useState<MenuCategory[]>([]);
+  const [selectedService, setSelectedService] = useState<string>('Snack');
 
   const db = getFirestore();
   
   
       useEffect(() => {
           
-          const q = query(collection(db, 'products'));
+          const q = query(collection(db, 'products'), where('services', 'array-contains', selectedService));
       
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const productsFromDB: ProductFromDB[] = [];
@@ -57,7 +59,7 @@ export default function SnackScreen() {
           });
       
           return () => unsubscribe();
-        }, []);
+        }, [selectedService]);
 
   const renderItem = ({ item }: { item: MenuProduct }) => (
     <ThemedView style={styles.menuItem}>
@@ -85,6 +87,10 @@ export default function SnackScreen() {
 
   return (
     <ThemedView>
+      <ServiceSelector 
+        selectedService={selectedService}
+        onServiceChange={setSelectedService}
+      />
       <FlatList
         data={menuData}
         renderItem={renderCategory}
