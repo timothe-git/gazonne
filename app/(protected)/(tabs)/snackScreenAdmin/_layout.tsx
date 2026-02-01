@@ -20,13 +20,6 @@ export default function RootLayout() {
               options={{
                 title: 'Snack',
                 animation: "none",
-                headerLeft: () => (
-                <Link href='/snackScreenAdmin/ProductForm' dismissTo asChild>
-                  <TouchableOpacity>
-                    <ThemedText style={{ color: 'black' }}>Nouveau</ThemedText>
-                  </TouchableOpacity>
-                </Link>
-              ),
                 headerRight: () => (
                 <Link href='/snackScreenAdmin/SnackHistory' asChild>
                   <TouchableOpacity>
