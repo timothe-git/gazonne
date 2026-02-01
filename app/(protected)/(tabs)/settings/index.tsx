@@ -20,7 +20,7 @@ export default function SettingsScreen() {
 	const settingsItems = [
 		{ label: 'Produits', href: '/settings/products', description: 'Gérer les produits' },
 		//{ label: 'Employés', href: '/settings/employees', description: 'Gérer les employés' },
-		//{ label: 'Chalets', href: '/settings/chalets', description: 'Gérer les chalets' },
+		{ label: 'Chalets', href: '/settings/chalets', description: 'Gérer les chalets' },
 		{ label: 'Historique de commande', href: '/settings/order-history', description: 'Consulter les commandes' },
 		{ label: 'Activités', href: '/settings/activities', description: 'Modifier les activités' },
 	];

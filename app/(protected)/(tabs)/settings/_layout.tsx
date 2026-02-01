@@ -55,6 +55,22 @@ export default function SettingsLayout() {
               }}
             />
 
+            <Stack.Screen
+              name="chalets/index"
+              options={{
+                title: 'Gestion des chalets',
+                animation: "none",
+              }}
+            />
+
+            <Stack.Screen
+              name="chalets/consumption"
+              options={{
+                title: 'Consommations',
+                animation: "none",
+              }}
+            />
+
           </Stack>
   );
 }

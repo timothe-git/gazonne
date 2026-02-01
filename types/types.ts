@@ -70,3 +70,17 @@ export interface DayActivities {
   day: string;
   activities: Activity[];
 }
+
+export interface Chalet {
+  id: string; // This IS the chalet number
+  booked: boolean;
+  clientId?: string;
+}
+
+export interface ConsumptionRecord {
+  id: string;
+  productName: string;
+  quantity: number;
+  price: number;
+  createdAt: Timestamp;
+}
