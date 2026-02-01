@@ -27,9 +27,9 @@ export default function ProductFormScreen() {
   const isEditMode = !!productId;
 
   const services = [
-    { label: 'petit-déj', value: 'petit-déj' },
-    { label: 'snack', value: 'snack' },
-    { label: 'bar', value: 'bar' },
+    { label: 'Petit-déj', value: 'Petit-déj' },
+    { label: 'Snack', value: 'Snack' },
+    { label: 'Bar', value: 'Bar' },
   ];
 
   useEffect(() => {

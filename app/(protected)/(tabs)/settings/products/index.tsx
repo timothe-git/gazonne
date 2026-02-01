@@ -12,6 +12,9 @@ export default function ProductsScreen() {
 
   const [products, setProducts] = useState<ProductFromDB[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [sortByName, setSortByName] = useState<'asc' | 'desc'>('asc');
 
 
   useEffect(() => {
@@ -67,6 +70,67 @@ export default function ProductsScreen() {
       ]
     );
   };
+
+  // Get unique services from all products
+  const getAllServices = (): string[] => {
+    const services = new Set<string>();
+    products.forEach(product => {
+      product.services?.forEach(service => services.add(service));
+    });
+    return Array.from(services).sort();
+  };
+
+  // Get unique categories from all products
+  const getAllCategories = (): string[] => {
+    const categories = new Set<string>();
+    products.forEach(product => {
+      categories.add(product.category);
+    });
+    return Array.from(categories).sort();
+  };
+
+  // Filter and sort products
+  const filteredAndSortedProducts = (() => {
+    let filtered = products;
+
+    // Apply service filter
+    if (selectedServices.length > 0) {
+      filtered = filtered.filter(product =>
+        product.services?.some(service => selectedServices.includes(service))
+      );
+    }
+
+    // Apply category filter
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(product =>
+        selectedCategories.includes(product.category)
+      );
+    }
+
+    // Apply name sort
+    filtered.sort((a, b) => {
+      const comparison = a.name.localeCompare(b.name);
+      return sortByName === 'asc' ? comparison : -comparison;
+    });
+
+    return filtered;
+  })();
+
+  const toggleServiceFilter = (service: string) => {
+    setSelectedServices(prev =>
+      prev.includes(service)
+        ? prev.filter(s => s !== service)
+        : [...prev, service]
+    );
+  };
+
+  const toggleCategoryFilter = (category: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
   const renderNewProductButton = () => (
     <TouchableOpacity 
       style={styles.newProductButton} 
@@ -75,6 +139,71 @@ export default function ProductsScreen() {
     >
       <ThemedText style={styles.newProductButtonText}>+ Nouveau produit</ThemedText>
     </TouchableOpacity>
+  );
+
+  const renderFilterSortBar = () => (
+    <ThemedView style={styles.filterSortContainer}>
+      {/* Services Filter */}
+      <ThemedView style={styles.filterSection}>
+        <ThemedText style={styles.filterLabel}>Services:</ThemedText>
+        <ThemedView style={styles.servicesFilterContainer}>
+          {getAllServices().map(service => (
+            <TouchableOpacity
+              key={service}
+              style={[
+                styles.serviceChip,
+                selectedServices.includes(service) && styles.serviceChipActive
+              ]}
+              onPress={() => toggleServiceFilter(service)}
+            >
+              <ThemedText style={[
+                styles.serviceChipText,
+                selectedServices.includes(service) && styles.serviceChipTextActive
+              ]}>
+                {service}
+              </ThemedText>
+            </TouchableOpacity>
+          ))}
+        </ThemedView>
+      </ThemedView>
+
+      {/* Categories Filter */}
+      <ThemedView style={styles.filterSection}>
+        <ThemedText style={styles.filterLabel}>Catégories:</ThemedText>
+        <ThemedView style={styles.categoriesFilterContainer}>
+          {getAllCategories().map(category => (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.categoryChip,
+                selectedCategories.includes(category) && styles.categoryChipActive
+              ]}
+              onPress={() => toggleCategoryFilter(category)}
+            >
+              <ThemedText style={[
+                styles.categoryChipText,
+                selectedCategories.includes(category) && styles.categoryChipTextActive
+              ]}>
+                {category}
+              </ThemedText>
+            </TouchableOpacity>
+          ))}
+        </ThemedView>
+      </ThemedView>
+
+      {/* Sort */}
+      <ThemedView style={styles.sortSection}>
+        <ThemedText style={styles.sortLabel}>Trier:</ThemedText>
+        <TouchableOpacity
+          style={styles.sortButton}
+          onPress={() => setSortByName(sortByName === 'asc' ? 'desc' : 'asc')}
+        >
+          <ThemedText style={styles.sortButtonText}>
+            {sortByName === 'asc' ? 'A-Z' : 'Z-A'}
+          </ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+    </ThemedView>
   );
 
   const renderProductItem = ({ item }: { item: ProductFromDB }) => (
@@ -115,10 +244,15 @@ export default function ProductsScreen() {
   return (
     <ThemedView style={styles.container}>
       <FlatList
-        data={products}
+        data={filteredAndSortedProducts}
         renderItem={renderProductItem}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderNewProductButton}
+        ListHeaderComponent={
+          <>
+            {renderNewProductButton()}
+            {renderFilterSortBar()}
+          </>
+        }
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <ThemedView style={styles.emptyContainer}>
@@ -154,6 +288,97 @@ const styles = StyleSheet.create({
   },
   newProductButtonText: {
     fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  filterSortContainer: {
+    backgroundColor: '#fff',
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 8,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+  },
+  filterSection: {
+    marginBottom: 12,
+  },
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  servicesFilterContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  serviceChip: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  serviceChipActive: {
+    backgroundColor: '#4CAF50',
+    borderColor: '#4CAF50',
+  },
+  serviceChipText: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '500',
+  },
+  serviceChipTextActive: {
+    color: '#fff',
+  },
+  categoriesFilterContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  categoryChip: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  categoryChipActive: {
+    backgroundColor: '#2196F3',
+    borderColor: '#2196F3',
+  },
+  categoryChipText: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '500',
+  },
+  categoryChipTextActive: {
+    color: '#fff',
+  },
+  sortSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sortLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  sortButton: {
+    backgroundColor: '#2196F3',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  sortButtonText: {
+    fontSize: 13,
     fontWeight: '600',
     color: '#fff',
   },
