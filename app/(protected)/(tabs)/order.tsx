@@ -1,7 +1,7 @@
 import ServiceSelector from '@/components/ServiceSelector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MenuCategory, MenuProduct, OrderItemWithInstances, ProductFromDB } from '@/types/types';
+import { Chalet, MenuCategory, MenuProduct, OrderItemWithInstances, ProductFromDB } from '@/types/types';
 import { addDoc, collection, doc, getFirestore, onSnapshot, query, serverTimestamp, updateDoc, where } from '@react-native-firebase/firestore';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -21,6 +21,7 @@ export default function OrderScreen() {
     const [chaletModalVisible, setChaletModalVisible] = useState(false);
     const [isEditingOrder, setIsEditingOrder] = useState(false);
     const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+    const [bookedChalets, setBookedChalets] = useState<Chalet[]>([]);
 
   
     const db = getFirestore();
@@ -45,7 +46,7 @@ export default function OrderScreen() {
 
     useEffect(() => {
         
-        const q = query(collection(db, 'products'), where('services', 'array-contains', selectedService));
+      const q = query(collection(db, 'products'), where('services', 'array-contains', selectedService));
     
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
           const productsFromDB: ProductFromDB[] = [];
@@ -87,6 +88,33 @@ export default function OrderScreen() {
     
         return () => unsubscribe();
       }, [selectedService]);
+
+    useEffect(() => {
+      const q = query(collection(db, 'chalets'), where('booked', '==', true));
+
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const chaletsFromDB: Chalet[] = [];
+        querySnapshot.forEach((doc: any) => {
+          chaletsFromDB.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        chaletsFromDB.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+        setBookedChalets(chaletsFromDB);
+      });
+
+      return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+      if (!chalet) return;
+      const stillBooked = bookedChalets.some((item) => item.id === chalet);
+      if (!stillBooked) {
+        setChalet("");
+      }
+    }, [bookedChalets, chalet]);
   
     // Generate unique ID for each item instance
     const generateInstanceId = () => {
@@ -387,7 +415,7 @@ export default function OrderScreen() {
                 {chaletModalVisible && (
                   <View style={styles.dropdownList}>
                     <FlatList
-                      data={Array.from({ length: 28 }, (_, i) => (i + 1).toString())}
+                      data={bookedChalets.map((item) => item.id)}
                       renderItem={({ item }) => (
                         <TouchableOpacity
                           style={[styles.chaletOption, chalet === item && styles.chaletOptionSelected]}
