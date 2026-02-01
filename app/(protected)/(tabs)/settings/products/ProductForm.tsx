@@ -7,14 +7,14 @@ const ProductForm: React.FC = () => {
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [service, setService] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
 
   const db = getFirestore();
 
   const handleSubmit = () => {
-    if (!productName || !category || !description || !price || selectedServices.length === 0) {
-      Alert.alert('Erreur', 'Complétez tous les champs et sélectionnez au moins un service.');
+    if (!productName || !category || !description || !price || !service) {
+      Alert.alert('Erreur', 'Complétez tous les champs.');
       return;
     }
     createProduct();
@@ -23,7 +23,7 @@ const ProductForm: React.FC = () => {
     setCategory('');
     setDescription('');
     setPrice('');
-    setSelectedServices([]);
+    setService('');
   };
 
   const createProduct = async () => {
@@ -32,7 +32,7 @@ const ProductForm: React.FC = () => {
           category: category,
           description: description,
           price: price,
-          services: selectedServices
+          service: service
         };
       
         try {
@@ -48,16 +48,6 @@ const ProductForm: React.FC = () => {
     { label: 'snack', value: 'snack' },
     { label: 'bar', value: 'bar' },
   ];
-
-  const toggleService = (serviceValue: string) => {
-    setSelectedServices(prev => {
-      if (prev.includes(serviceValue)) {
-        return prev.filter(s => s !== serviceValue);
-      } else {
-        return [...prev, serviceValue];
-      }
-    });
-  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -92,7 +82,7 @@ const ProductForm: React.FC = () => {
       />
       <TouchableOpacity style={styles.serviceButton} onPress={() => setModalVisible(true)}>
         <Text style={styles.serviceButtonText}>
-          {selectedServices.length > 0 ? `Services: ${selectedServices.join(', ')}` : 'Sélectionnez un ou plusieurs services'}
+          {service ? `Service sélectionné: ${service}` : 'Sélectionnez un service'}
         </Text>
       </TouchableOpacity>
 
@@ -107,25 +97,17 @@ const ProductForm: React.FC = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Sélectionnez un ou plusieurs services</Text>
+            <Text style={styles.modalTitle}>Sélectionnez un service</Text>
             {services.map((item) => (
               <TouchableOpacity
                 key={item.value}
-                style={[
-                  styles.serviceOption,
-                  selectedServices.includes(item.value) && styles.serviceOptionSelected
-                ]}
-                onPress={() => toggleService(item.value)}
+                style={styles.serviceOption}
+                onPress={() => {
+                  setService(item.label);
+                  setModalVisible(false);
+                }}
               >
-                <Text style={[
-                  styles.serviceOptionText,
-                  selectedServices.includes(item.value) && styles.serviceOptionTextSelected
-                ]}>
-                  {item.label}
-                </Text>
-                {selectedServices.includes(item.value) && (
-                  <Text style={styles.serviceCheckmark}>✓</Text>
-                )}
+                <Text style={styles.serviceOptionText}>{item.label}</Text>
               </TouchableOpacity>
             ))}
             <Button title="Cancel" onPress={() => setModalVisible(false)} />
@@ -199,29 +181,15 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   serviceOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     width: '100%',
-  },
-  serviceOptionSelected: {
-    backgroundColor: '#e3f2fd',
+    alignItems: 'center',
   },
   serviceOptionText: {
     fontSize: 16,
     color: '#333',
-  },
-  serviceOptionTextSelected: {
-    color: '#1976d2',
-    fontWeight: '600',
-  },
-  serviceCheckmark: {
-    fontSize: 18,
-    color: '#4CAF50',
-    fontWeight: 'bold',
   },
 });
 

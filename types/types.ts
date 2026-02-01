@@ -18,7 +18,7 @@ export interface ProductFromDB {
   description: string,
   name: string,
   price: number,
-  service: string,
+  services: string[],
   extras?: ProductExtra[],
 }
 
