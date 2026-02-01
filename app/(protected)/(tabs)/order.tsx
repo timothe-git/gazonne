@@ -214,9 +214,13 @@ export default function OrderScreen() {
       setWaitingForConfirmation(true);
     };
 
-    const finalizeOrder = () => {
-      createOrder();
-      resetOrder();
+    const finalizeOrder = async () => {
+      const success = await createOrder();
+      if (success) {
+        resetOrder();
+        setWaitingForConfirmation(false);
+        setChaletModalVisible(false);
+      }
     };
 
     const resetOrder = () => {
@@ -228,9 +232,6 @@ export default function OrderScreen() {
 
     const cancelOrder = () => {
       setWaitingForConfirmation(false);
-      if (isEditingOrder) {
-        resetOrder();
-      }
     };
   
 
@@ -249,8 +250,10 @@ export default function OrderScreen() {
           const docRef = doc(db, "orders", editingOrderId);
           await updateDoc(docRef, orderToSend);
           console.log("Document updated with ID: ", editingOrderId);
+          return true;
         } catch (e) {
           console.error("Error updating document: ", e);
+          return false;
         }
       } else {
         // Create new order
@@ -264,8 +267,10 @@ export default function OrderScreen() {
         try {
           const docRef = await addDoc(collection(db, "orders"), orderToSend);
           console.log("Document written with ID: ", docRef.id);
+          return true;
         } catch (e) {
           console.error("Error adding document: ", e);
+          return false;
         }
       }
     }
