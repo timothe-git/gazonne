@@ -62,7 +62,7 @@ export interface Order {
 
 export interface Activity {
   name: string;
-  startTime: string;
+  duration: string;
   location: string;
 }
 

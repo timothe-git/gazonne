@@ -39,6 +39,22 @@ export default function SettingsLayout() {
               }}
             />
 
+            <Stack.Screen
+              name="activities/index"
+              options={{
+                title: 'Modifier les activités',
+                animation: "none",
+              }}
+            />
+
+            <Stack.Screen
+              name="activities/form"
+              options={{
+                title: 'Formulaire activité',
+                animation: "none",
+              }}
+            />
+
           </Stack>
   );
 }

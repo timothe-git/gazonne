@@ -1,59 +1,66 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Activity, DayActivities } from '@/types/types';
+import { collection, getFirestore, onSnapshot, query } from '@react-native-firebase/firestore';
+import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 
+const DAYS_OF_WEEK = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
-const weeklyActivities: DayActivities[] = [
-  {
-    day: 'Dimanche',
-    activities: [
-      { startTime: '19h', name: 'Pot d\'arrivée', location: 'Terrain de pétanque' },
-    ],
-  },
-  {
-    day: 'Lundi',
-    activities: [
-      { startTime: '10-12h', name: 'Club enfant', location: 'Terrain de pétanque' },
-      { startTime: '21h', name: 'Soirée pré-ados', location: 'Tente de réception' },
-      { startTime: '21h', name: 'Rencontre autour du cochonet', location: 'Terrain de pétanque' },
-    ],
-  },
-  { day: 'Mardi', activities: [
-      { startTime: '10-12h', name: 'Club enfant', location: 'Terrain de pétanque' },
-      { startTime: '20h', name: 'Repas Aveyronnais', location: 'Tente de réception' },
-    ],
-  },
-  {
-    day: 'Mercredi',
-    activities: [
-      { startTime: '10-12h', name: 'Club enfant', location: 'Terrain de pétanque' },
-      { startTime: '18h', name: 'Initiation au Disc-golf', location: 'Terrain de foot' },
-      { startTime: '21h', name: 'Loto des chalets', location: 'Bar' },
-    ],
-  },
-  {
-    day: 'Jeudi',
-    activities: [
-      { startTime: '9h', name: 'Petit-déjeuner aux tripous', location: 'Bar' },
-      { startTime: '10-12h', name: 'Club enfant', location: 'Terrain de pétanque' },
-      { startTime: '19h30 à 21h', name: 'Soirée Gazonne', location: 'Bar' },
-    ],
-  },
-  { day: 'Vendredi', activities: [
-      { startTime: '10-12h', name: 'Club enfant', location: 'Terrain de pétanque' },
-      { startTime: '18h à 22h', name: 'Marché gourmand nocturne de Sauveterre-de-Rouergue', location: 'Place des Arcades' },
-      { startTime: '21h', name: 'Visite aux flambeaux', location: 'Place des Arcades' },
-    ],
-  },
-];
+interface ActivityWithId extends Activity {
+  id: string;
+}
 
 
 export default function ActivitiesScreen() {
+  const db = getFirestore();
+  const [activities, setActivities] = useState<ActivityWithId[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'activities'));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const activitiesFromDB: ActivityWithId[] = [];
+      querySnapshot.forEach((doc: any) => {
+        activitiesFromDB.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setActivities(activitiesFromDB);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Group activities by day (location field)
+  const groupActivitiesByDay = (): DayActivities[] => {
+    const grouped: { [key: string]: Activity[] } = {};
+    
+    DAYS_OF_WEEK.forEach(day => {
+      grouped[day] = [];
+    });
+
+    activities.forEach(activity => {
+      if (grouped[activity.location] === undefined) {
+        grouped[activity.location] = [];
+      }
+      grouped[activity.location].push(activity);
+    });
+
+    return DAYS_OF_WEEK
+      .map(day => ({
+        day,
+        activities: grouped[day] || [],
+      }));
+  };
+
+  const displayActivities = groupActivitiesByDay();
+
   const renderActivity = ({ item }: { item: Activity }) => (
     <ThemedView style={styles.activityContainer}>
       <ThemedText style={styles.activityName}>{item.name}</ThemedText>
-      <ThemedText style={styles.activityDetails}>{item.startTime} - {item.location}</ThemedText>
+      <ThemedText style={styles.activityDetails}>{item.duration} - {item.location}</ThemedText>
     </ThemedView>
   );
 
@@ -83,7 +90,7 @@ export default function ActivitiesScreen() {
 
   return (
     <FlatList
-      data={weeklyActivities}
+      data={displayActivities}
       renderItem={renderDayActivities}
       keyExtractor={(day) => day.day}
       contentContainerStyle={styles.container}
