@@ -81,6 +81,7 @@ export default function TabLayout() {
         title: 'Réglages',
         tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         href: authState.isLoggedIn ? '/settings' : null,
+        headerShown: false,
       }}
       />
     </Tabs>

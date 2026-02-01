@@ -2,7 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ProductExtra, ProductFromDB } from '@/types/types';
 import { addDoc, collection, doc, getDoc, getFirestore, updateDoc } from '@react-native-firebase/firestore';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -179,6 +179,13 @@ export default function ProductFormScreen() {
 
   return (
     <ThemedView style={styles.container}>
+        <Stack.Screen
+          options={{
+            title: isEditMode ? 'Modifier le produit' : 'Ajouter un produit',
+            animation: "none",
+            headerShown: true,
+          }}
+        />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <TextInput
           style={styles.input}

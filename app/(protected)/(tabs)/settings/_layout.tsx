@@ -18,7 +18,22 @@ export default function RootLayout() {
               options={{
                 title: 'Réglages',
                 animation: "none",
-                headerShown: false,
+              }}
+            />
+
+            <Stack.Screen
+              name="products/index"
+              options={{
+                title: 'Produits',
+                animation: "none",
+              }}
+            />
+
+            <Stack.Screen
+              name="products/form"
+              options={{
+                title: 'Formulaire produit',
+                animation: "none",
               }}
             />
 

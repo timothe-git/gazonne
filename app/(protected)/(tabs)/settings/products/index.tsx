@@ -32,12 +32,12 @@ export default function ProductsScreen() {
   }, []);
 
   const handleNewProduct = () => {
-    router.push('/(protected)/(tabs)/settings/products/form');
+    router.push('/settings/products/form');
   };
 
   const handleEditProduct = (productId: string) => {
     router.push({
-      pathname: '/(protected)/(tabs)/settings/products/form',
+      pathname: '/settings/products/form',
       params: { productId },
     });
   };
