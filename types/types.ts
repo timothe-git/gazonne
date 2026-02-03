@@ -84,3 +84,24 @@ export interface ConsumptionRecord {
   price: number;
   createdAt: Timestamp;
 }
+
+export interface EmployeePermissions {
+  canManageProducts: boolean;
+  canManageEmployees: boolean;
+  canManageChalets: boolean;
+  canViewOrders: boolean;
+  canManageActivities: boolean;
+}
+
+export interface Employee {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  role: string;
+  permissions: EmployeePermissions;
+  isActive: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
