@@ -2,6 +2,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { OrderFromDB, OrderItemWithInstances } from '@/types/types';
 import { collection, deleteDoc, doc, getFirestore, onSnapshot, orderBy, query, Timestamp, updateDoc, where } from '@react-native-firebase/firestore';
+import { File, Paths } from 'expo-file-system';
+import * as MailComposer from 'expo-mail-composer';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -53,7 +55,47 @@ export default function ConsumptionScreen() {
     });
   };
 
-  const handleCloseAccount = () => {
+  const generateCSV = () => {
+    // CSV header
+    let csvContent = 'Date,Service,Produit,Quantité,Détails\n';
+
+    // Add each order to CSV
+    orders.forEach((order) => {
+      const date = formatDate(order.createdAt);
+      const service = order.service;
+
+      Object.entries(order.order).forEach(
+        ([productName, productData]: [string, OrderItemWithInstances]) => {
+          const instances = productData.instances ?? [];
+          const totalQuantity = instances.length;
+
+          // Build details for all instances
+          const details = instances
+            .map((instance, index) => {
+              const extras = instance.extras && Object.keys(instance.extras).length > 0
+                ? Object.entries(instance.extras)
+                    .map(([name, qty]) => (qty > 1 ? `${name} x${qty}` : name))
+                    .join('; ')
+                : 'sans suppléments';
+              return `${index + 1}. ${extras}`;
+            })
+            .join(' | ');
+
+          // Escape quotes in CSV fields
+          const escapedProduct = `"${productName.replace(/"/g, '""')}"`;
+          const escapedDetails = `"${details.replace(/"/g, '""')}"`;
+          const escapedDate = `"${date.replace(/"/g, '""')}"`;
+          const escapedService = `"${service.replace(/"/g, '""')}"`;
+
+          csvContent += `${escapedDate},${escapedService},${escapedProduct},${totalQuantity},${escapedDetails}\n`;
+        }
+      );
+    });
+
+    return csvContent;
+  };
+
+  const handleCloseAccount = async () => {
     Alert.alert(
       'Fermer le compte',
       `Êtes-vous sûr de vouloir clôturer le compte du client ${clientId} ?`,
@@ -66,6 +108,30 @@ export default function ConsumptionScreen() {
           text: 'Confirmer',
           onPress: async () => {
             try {
+              // Generate CSV content
+              const csvContent = generateCSV();
+              const fileName = `chalet_${chaletId}_client_${clientId}_${Date.now()}.csv`;
+              
+              // Create file using new FileSystem API
+              const file = new File(Paths.document, fileName);
+
+              // Write CSV file
+              await file.write(csvContent);
+
+              // Check if email is available
+              const isAvailable = await MailComposer.isAvailableAsync();
+              if (isAvailable) {
+                // Compose email with CSV attachment
+                await MailComposer.composeAsync({
+                  subject: `Compte Chalet ${chaletId} - Client ${clientId}`,
+                  body: `Veuillez trouver ci-joint le relevé de consommation du chalet ${chaletId} pour le client ${clientId}.`,
+                  attachments: [file.uri],
+                });
+              } else {
+                Alert.alert('Erreur', 'L\'email n\'est pas disponible sur cet appareil');
+                return;
+              }
+
               // Update chalet booked status back to false
               const chaletRef = doc(db, 'chalets', chaletId);
               await updateDoc(chaletRef, {
@@ -78,6 +144,9 @@ export default function ConsumptionScreen() {
                 deleteDoc(doc(db, 'orders', order.id))
               );
               await Promise.all(deletePromises);
+
+              // Clean up the CSV file
+              await file.delete();
 
               Alert.alert('Succès', 'Le compte a été clôturé', [
                 {
